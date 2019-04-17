@@ -1,128 +1,104 @@
-rm(list=ls())
-setwd("~/OTbias_PM")
 source("dmc/dmc.R")
+source("dmc/dmc_extras.R")
 load_model ("LBA","lbaN_B.R")
-load("~/OTbias_PM/sampling/FFdstartpoints.RData")
+load("samples/samples_top.RData")
+theme_set(theme_simple())
 
-PP <-
-  h.post.predict.dmc(FFdsamples,
-                     save.simulation = TRUE,
-                     cores = length(FFdsamples))
+# PP <-
+#   h.post.predict.dmc(samples_top,
+#                      save.simulation = TRUE,
+#                      cores = length(samples_top))
+# save(PP, file="img/pp_top.RData")
 
-save(PP, file="img/pp_top.RData")
+load("img/pp_top.RData")
 
-sim <- do.call(rbind, PP)
-# sim <- do.call(rbind, PPnoBs)
-# Do the same for the data
-data <- lapply(PP, function(x) attr(x, "data"))
-data <- do.call(rbind, data)
-GGLIST <- get.fitgglist.dmc(sim,data, factors=c("E", "S"))
-pp.obj<- GGLIST[[1]]
+#get data summaries
+# fit_summaries <- GET.fitgglist.dmc(PP, factors = c("S", "E"))
+# save(fit_summaries, file="img/fit_summaries_top.RData")
+load("img/fit_summaries_top.RData")
 
-pp.obj$E <- factor(as.character(pp.obj$E), labels=c("Nc", "Wc"))
-RT.obj <- GGLIST[[2]]
+#convert factor names back 
+fit_summaries <- lapply(fit_summaries, function(x) {
+  x$E <-  factor(as.character(x$E), labels = c("Nc", "Wc"))
+  x
+})
 
-RT.obj <- RT.obj[!((RT.obj$S=="nn"|RT.obj$S=="ww")& RT.obj$R=="P"),]
+#Model fits to ongoing task performance
+OT_acc <- fit_summaries$pps[(fit_summaries$pps$S == "ww" &
+                           fit_summaries$pps$R == "W") |
+                          (fit_summaries$pps$S == "nn" &
+                             fit_summaries$pps$R == "N"),]
 
+OT_plot<-ggplot.RP.dmc(OT_acc, xaxis="E")
+OT_plot
 
+OT_RTs <- fit_summaries$RTs[(fit_summaries$RTs$S == "ww"|
+                           fit_summaries$RTs$S == "nn") &
+                             fit_summaries$RTs$R != "P",]
+
+OT_RTs_plot<-ggplot.RT.dmc(OT_RTs, xaxis="E")
+OT_RTs_plot
+
+#Model fits to all the intricate PM trial data
 ## Take only the PM accuracies and drop the R column.
-PM.acc.obj <- pp.obj[(pp.obj$S=="pn" & pp.obj$R=="P")|
-                            (pp.obj$S=="pw" & pp.obj$R=="P"),]
-                          # !(names(pp.obj) %in% "R")]
+PM_acc <-
+  fit_summaries$pps[(fit_summaries$pps$S == "pn" &
+                      fit_summaries$pps$R == "P") |
+                     (fit_summaries$pps$S == "pw" &
+                        fit_summaries$pps$R == "P"), ]
 
-PM<-ggplot.RP.dmc(PM.acc.obj, xaxis="E")
-PM
-#Shift in errors check
+PM_plot<-ggplot.RP.dmc(PM_acc, xaxis="E")
 
-## Take only the PM accuracies and drop the R column.
-PM.acc.obj <- pp.obj[(pp.obj$S=="pn" & pp.obj$R=="N")|
-                            (pp.obj$S=="pw" & pp.obj$R=="W") |
-                       (pp.obj$S=="pn" & pp.obj$R=="W")|
-                            (pp.obj$S=="pw" & pp.obj$R=="N")
-                       ,]
-                          # !(names(pp.obj) %in% "R")]
-
-
-PMerr<-ggplot.RP.dmc(PM.acc.obj, xaxis="E") 
+#correct ldt responses on PM trials
+PM_err_ldC <-
+  fit_summaries$pps[(fit_summaries$pps$S == "pn" &
+                       fit_summaries$pps$R == "N") |
+                      (fit_summaries$pps$S == "pw" &
+                         fit_summaries$pps$R == "W") 
+                    , ]
+                         
 
 
-PM.acc.obj<- pp.obj[(pp.obj$S=="pn" & pp.obj$R=="W")|
-                            (pp.obj$S=="pw" & pp.obj$R=="N"),]
-                          # !(names(pp.obj) %in% "R")]
+PMerrC_plot <-ggplot.RP.dmc(PM_err_ldC, xaxis="E") 
+
+#incorrect ldt on PM trials
+PM_err_ldI <-
+  fit_summaries$pps[(fit_summaries$pps$S == "pn" &
+                       fit_summaries$pps$R == "W") |
+                      (fit_summaries$pps$S == "pw" &
+                         fit_summaries$pps$R == "N"),]
+
+PMerrI_plot<-ggplot.RP.dmc(PM_err_ldI, xaxis="E")
+
+grid.arrange(PM_plot, PMerrC_plot, PMerrI_plot)
 
 
+PM_RTs <-
+  fit_summaries$RTs[(fit_summaries$RTs$S == "pn" &
+                       fit_summaries$RTs$R == "P") |
+                      (fit_summaries$RTs$S == "pw" &
+                         fit_summaries$RTs$R == "P"),]
 
-PMerr1<-ggplot.RP.dmc(PM.acc.obj, xaxis="E")
+PM_RTs_plot <-ggplot.RT.dmc(PM_RTs,xaxis="E")
 
-grid.arrange(PM, PMerr,PMerr1)
+PMerr_RTs_ldC <-
+  fit_summaries$RTs[(fit_summaries$RTs$S == "pn" &
+                       fit_summaries$RTs$R == "N") |
+                      (fit_summaries$RTs$S == "pw" &
+                         fit_summaries$RTs$R == "W"), ]
 
+PMerrC_RTs_plot <-ggplot.RT.dmc(PMerr_RTs_ldC, xaxis="E") 
 
-RT.obj <- GGLIST[[2]]
-RT.obj$E <- factor(as.character(RT.obj$E), labels=c("Nc", "Wc"))
-## Take only the PM accuracies and drop the R column.
-PM.RT.obj <- RT.obj[(RT.obj$S=="pn" & RT.obj$R=="P")|
-                            (RT.obj$S=="pw" & RT.obj$R=="P"),]
-                          # !(names(RT.obj) %in% "R")]
-
-PM<-ggplot.RT.dmc(PM.RT.obj,xaxis="E")
-
-#Shift in errors check
-
-## Take only the PM accuracies and drop the R column.
-PM.RT.obj <- RT.obj[(RT.obj$S=="pn" & RT.obj$R=="N")|
-                            (RT.obj$S=="pw" & RT.obj$R=="W"),]
-                          # !(names(RT.obj) %in% "R")]
-
-
-PMerr<-ggplot.RT.dmc(PM.RT.obj, xaxis="E") 
-
-PM.RT.obj<- RT.obj[(RT.obj$S=="pn" & RT.obj$R=="W")|
-                            (RT.obj$S=="pw" & RT.obj$R=="N"),]
-                          # !(names(RT.obj) %in% "R")]
+PMerr_RTs_ldI <-
+  fit_summaries$RTs[(fit_summaries$RTs$S == "pn" &
+                       fit_summaries$RTs$R == "W") |
+                      (fit_summaries$RTs$S == "pw" &
+                         fit_summaries$RTs$R == "N"), ]
 
 
+PMerrI_RTs_plot <-ggplot.RT.dmc(PMerr_RTs_ldI, xaxis="E")
 
-PMerr1<-ggplot.RT.dmc(PM.RT.obj, xaxis="E")
-
-grid.arrange(PM, PMerr,PMerr1)
-
-
-
-
-
-RT.obj <- GGLIST[[2]]
-
-RT.obj <- RT.obj[!((RT.obj$S=="ww"|RT.obj$S=="nn") & RT.obj$R=="P"),]
-
-## Take only the PM accuracies and drop the R column.
-PM.RT.obj <- RT.obj[(RT.obj$S=="pn" & RT.obj$R=="P")|
-                            (RT.obj$S=="pw" & RT.obj$R=="P"),]
-                          # !(names(RT.obj) %in% "R")]
-
-PM<-ggplot.RT.dmc(PM.RT.obj,xaxis="E", do.quantiles=T)
-
-#Shift in errors check
-
-## Take only the PM accuracies and drop the R column.
-PM.RT.obj <- RT.obj[(RT.obj$S=="pn" & RT.obj$R=="N")|
-                            (RT.obj$S=="pw" & RT.obj$R=="W"),]
-                          # !(names(RT.obj) %in% "R")]
-
-
-PMerr<-ggplot.RT.dmc(PM.RT.obj, xaxis="E", do.quantiles=T) 
-
-PM.RT.obj<- RT.obj[(RT.obj$S=="pn" & RT.obj$R=="W")|
-                            (RT.obj$S=="pw" & RT.obj$R=="N"),]
-                          # !(names(RT.obj) %in% "R")]
-
-
-
-PMerr1<-ggplot.RT.dmc(PM.RT.obj, xaxis="E", do.quantiles=T)
-
-grid.arrange(PM, PMerr,PMerr1)
-
-
-
+grid.arrange(PM_RTs_plot, PMerrC_RTs_plot,PMerrI_RTs_plot)
 
 
 
