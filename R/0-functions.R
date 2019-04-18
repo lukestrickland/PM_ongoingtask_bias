@@ -86,3 +86,57 @@ get.normalized.ldC <- function(df) {
   names(out) <- c("NcpwW",  "WcpwW", "NcpnN", "WcpnN")
   out
 }
+
+get.diff.normalized.ldC <- function(df) {
+  
+  NcpwW <- length(df$RT[df$S=="pw" & df$E=="I" & df$R=="W"])/
+    length(df$RT[df$S=="pw" & df$E=="I" & df$R!="P"])
+  
+  WcpwW <- length(df$RT[df$S=="pw" & df$E=="U" & df$R=="W"])/
+  length(df$RT[df$S=="pw" & df$E=="U" & df$R!="P"])
+  
+  NcpnN <- length(df$RT[df$S=="pn" & df$E=="I" & df$R=="N"])/
+    length(df$RT[df$S=="pn" & df$E=="I" & df$R!="P"])
+  
+  WcpnN <- length(df$RT[df$S=="pn" & df$E=="U" & df$R=="N"])/
+  length(df$RT[df$S=="pn" & df$E=="U" & df$R!="P"])
+  
+  out <- c(NcpwW - WcpwW,  WcpnN - NcpnN)
+  names(out) <- c("NcpwW - WcpwW",  "WcpnN - NcpnN")
+  out
+}
+
+label_effects <- function (effects) {
+  effects$E <- NA
+  effects$R <- NA
+  effects$S <- NA
+  effects$E[grep("Nc", rownames(effects))] <- "Nc"
+  effects$E[grep("Wc", rownames(effects))] <- "Wc"
+  effects$R[grep("N$", rownames(effects))] <- "N"
+  effects$R[grep("W$", rownames(effects))] <- "W"
+  effects$S[grep("w", rownames(effects))] <- "Word Trial"
+  effects$S[grep("n", rownames(effects))] <- "Non-word Trial"
+  effects
+}
+
+
+get.diff.OT.normalized.ldC <- function(df) {
+  
+  NcwwW <- length(df$RT[df$S=="ww" & df$E=="I" & df$R=="W"])/
+    length(df$RT[df$S=="ww" & df$E=="I" & df$R!="P"])
+  
+  WcwwW <- length(df$RT[df$S=="ww" & df$E=="U" & df$R=="W"])/
+  length(df$RT[df$S=="ww" & df$E=="U" & df$R!="P"])
+  
+  NcnnN <- length(df$RT[df$S=="nn" & df$E=="I" & df$R=="N"])/
+    length(df$RT[df$S=="nn" & df$E=="I" & df$R!="P"])
+  
+  WcnnN <- length(df$RT[df$S=="nn" & df$E=="U" & df$R=="N"])/
+  length(df$RT[df$S=="nn" & df$E=="U" & df$R!="P"])
+  
+  out <- c(NcwwW - WcwwW,  WcnnN - NcnnN)
+  names(out) <- c("NcwwW - WcwwW",  "WcnnN - NcnnN")
+  out
+}
+
+
