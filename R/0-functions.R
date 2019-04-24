@@ -104,7 +104,6 @@ clean <- function(df) {
   print(mean(pbad,na.rm=T))
   df
 }
-
 wsAnova=function(dat,SStype=3,spss=F) {
   has.car=require(car)  
   if (!has.car) return("No \"car\"package, no ANOVA\n") 
@@ -122,10 +121,10 @@ wsAnova=function(dat,SStype=3,spss=F) {
   facnr=facn[nifac:1]
   e.mv=matrix(unlist(tapply(dat[,dvnam],dat[,facnr],function(x){x})),
               ncol=length(ifacn),dimnames=list(snams,ifacn))
-  summary(Anova(lm(e.mv ~ 1),
+  print(summary(Anova(lm(e.mv ~ 1),
                 idata=idata,type=SStype, 
                 idesign=formula(paste("~",paste(facn,collapse="*")))),
-          multivariate=FALSE)
+          multivariate=FALSE))
   if (spss) {
     e.mv=cbind.data.frame(s=row.names(e.mv),e.mv)
     row.names(e.mv)=NULL
@@ -362,8 +361,44 @@ get.diff.OT.normalized.ldC <- function(df) {
   out <- c(NcwwW - WcwwW,  WcnnN - NcnnN)
   names(out) <- c("NcwwW - WcwwW",  "WcnnN - NcnnN")
   out
-}
 
+get.diff.PM.OT.normalized.ldC <- function(df) {
+  
+  NcpwW <- length(df$RT[df$S=="pw" & df$E=="I" & df$R=="W"])/
+    length(df$RT[df$S=="pw" & df$E=="I" & df$R!="P"])
+  
+  WcpwW <- length(df$RT[df$S=="pw" & df$E=="U" & df$R=="W"])/
+  length(df$RT[df$S=="pw" & df$E=="U" & df$R!="P"])
+  
+  NcpnN <- length(df$RT[df$S=="pn" & df$E=="I" & df$R=="N"])/
+    length(df$RT[df$S=="pn" & df$E=="I" & df$R!="P"])
+  
+  WcpnN <- length(df$RT[df$S=="pn" & df$E=="U" & df$R=="N"])/
+  length(df$RT[df$S=="pn" & df$E=="U" & df$R!="P"])
+  
+  out <- c(NcpwW - WcpwW,  WcpnN - NcpnN)  
+  
+  NcwwW <- length(df$RT[df$S=="ww" & df$E=="I" & df$R=="W"])/
+    length(df$RT[df$S=="ww" & df$E=="I" & df$R!="P"])
+  
+  WcwwW <- length(df$RT[df$S=="ww" & df$E=="U" & df$R=="W"])/
+  length(df$RT[df$S=="ww" & df$E=="U" & df$R!="P"])
+  
+  NcnnN <- length(df$RT[df$S=="nn" & df$E=="I" & df$R=="N"])/
+    length(df$RT[df$S=="nn" & df$E=="I" & df$R!="P"])
+  
+  WcnnN <- length(df$RT[df$S=="nn" & df$E=="U" & df$R=="N"])/
+  length(df$RT[df$S=="nn" & df$E=="U" & df$R!="P"])
+  
+  out2 <- c(NcwwW - WcwwW,  WcnnN - NcnnN)
+  
+  out <- out-out2
+  
+  names(out) <- c("reacmagNbias","reacmagWbias")
+
+  out
+}
+  
 
   
 
