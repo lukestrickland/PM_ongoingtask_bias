@@ -1,4 +1,110 @@
 
+#puts together participant data files from folder
+getdat <- function(dirstr="data",codename="codes",slow=3000,fast=200) {
+  codes <- read.delim(paste(dirstr,codename,sep="/"))
+  fns <- dir(dirstr)[grep(".txt",dir(dirstr))]
+  sns <- unlist(lapply(strsplit(fns,".",fixed=TRUE),function(x){x[1]}))
+  for (i in 1:length(fns)) {
+    #     print(sns[i])    
+    dat <- read.delim(paste(dirstr,fns[i],sep="/"))
+    dat<- dat[,1:8]
+    
+    
+    ##### chuck key presses other than LD/PM in data frame datswrongkey   
+    if ((codes[codes[,1]==as.numeric(sns[i]),2]==1)|(codes[codes[,1]==as.numeric(sns[i]),2]==2)){
+      datwrongkey <- dat[!(dat$Actresponse=="s"|dat$Actresponse=="d"|dat$Actresponse=="j"),]
+      if (length(datwrongkey)>0) datwrongkey <- cbind(s=rep(sns[i],dim(datwrongkey)[1]),datwrongkey)    
+    } else { datwrongkey <- dat[!(dat$Actresponse=="d"|dat$Actresponse=="j"|dat$Actresponse=="k"),]
+             if (length(datwrongkey)>0) datwrongkey <- cbind(s=rep(sns[i],dim(datwrongkey)[1]),datwrongkey)
+    }
+    
+    
+    if (i==1) datswrongkey <<- as.data.frame(datwrongkey)  else datswrongkey <<- rbind(datswrongkey,datwrongkey)
+    
+    
+    
+    if (codes[codes[,1]==as.numeric(sns[i]),2]==1) {    
+      dat$Reqresponse <- factor(as.character(dat$Reqresponse),
+                                labels=c("Nonword","Word")) 
+      dat$Condition <- factor(as.character(dat$Condition),
+                                labels=c("NWC","WC")) 
+      dat$Actresponse <- factor(as.character(dat$Actresponse),
+                                levels=c("d","j","s"))   
+      dat$Actresponse <- factor(as.character(dat$Actresponse),
+                                labels=c("Nonword","PM","Word"))
+    } else if (codes[codes[,1]==as.numeric(sns[i]),2]==2) {
+      dat$Reqresponse <- factor(as.character(dat$Reqresponse),
+                                labels=c("Word","Nonword")) 
+      dat$Condition <- factor(as.character(dat$Condition),
+                              labels=c("WC","NWC")) 
+      dat$Actresponse <- factor(as.character(dat$Actresponse),
+                                levels=c("d","j","s"))   
+      dat$Actresponse <- factor(as.character(dat$Actresponse),
+                                labels=c("Word","PM","Nonword"))         
+    } else if (codes[codes[,1]==as.numeric(sns[i]),2]==4) {
+      dat$Reqresponse <- factor(as.character(dat$Reqresponse),
+                                labels=c("Word","Nonword")) 
+      dat$Condition <- factor(as.character(dat$Condition),
+                              labels=c("WC","NWC")) 
+      dat$Actresponse <- factor(as.character(dat$Actresponse),
+                                levels=c("d","j","k"))   
+      dat$Actresponse <- factor(as.character(dat$Actresponse),
+                                labels=c("PM","Word","Nonword"))     
+    } else if (codes[codes[,1]==as.numeric(sns[i]),2]==3) {
+      dat$Reqresponse <- factor(as.character(dat$Reqresponse),
+                                labels=c("Nonword","Word")) 
+      dat$Condition <- factor(as.character(dat$Condition),
+                              labels=c("NWC","WC")) 
+      dat$Actresponse <- factor(as.character(dat$Actresponse),
+                                levels=c("d","j","k"))   
+      dat$Actresponse <- factor(as.character(dat$Actresponse),
+                                labels=c("PM","Nonword","Word"))  
+    }     
+    dat$trials <- rep(1:660,times=4)
+    dat <- dat[!is.na(dat$Actresponse),]
+    tmp=table(dat$Stimuli[dat$Reqresponse!="PM"])
+    dat$Score <- as.logical(dat$Score)
+    dat <- cbind(s=rep(sns[i],dim(dat)[1]),dat)
+    dat$s <- as.character(dat$s)
+    if (i==1)  dats <- dat  else dats <- rbind(dats,dat)
+    ##badR uniques out
+    datdupe <- dat[duplicated(dat$Stimulus),]
+    if (i==1) datdupes <<- datdupe else datdupes <<- rbind(datdupes,datdupe)
+  }
+  dats$s <- factor(dats$s)  
+  names(dats) <- c("s","condition","day", "item",
+                   "C","S","R","RT", "ispmcue", "trial")
+  cat("% Fast Responses\n")
+  print(round(100*tapply(dats$RT<fast,dats$s,mean)))
+  cat("% Slow Responses\n")
+  print(round(100*tapply(dats$RT>slow,dats$s,mean)))
+  dats
+}
+
+clean <- function(df) {
+  dfc <- df
+  n=tapply(df$RT,list(df$s),length)
+  ns=tapply(df$RT,list(df$s),length)
+  mn=tapply(df$RT,list(df$s),mean)
+  sd=tapply(df$RT,list(df$s),IQR)
+  upper <- mn+3*(sd/1.349)
+  lower <- 0.2
+  bad <- logical(dim(df)[1])
+  levs <- paste(df$s,sep=".")
+  for (i in levels(df$s)){
+    lev <- i    
+    bad[levs==lev] <- df[levs==lev,"RT"] > upper[i] | df[levs==lev,"RT"] < lower
+  }
+  df=df[!bad,]
+  nok=tapply(df$RT,list(df$s),length)
+  pbad=100-100*nok/n
+  nok=tapply(df$RT,list(df$s),length)
+  pbad=100-100*nok/ns
+  print(sort(round(pbad,5)))  
+  print(mean(pbad,na.rm=T))
+  df
+}
+
 label_msds <- function(msds) {
   msds$E <- NA
   msds$day <- NA
@@ -138,5 +244,9 @@ get.diff.OT.normalized.ldC <- function(df) {
   names(out) <- c("NcwwW - WcwwW",  "WcnnN - NcnnN")
   out
 }
+
+
+
+  
 
 
