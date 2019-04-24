@@ -38,6 +38,10 @@ not_very_biased <- unique(c(names(N_bias_shift), names(W_bias_shift)))
 
 not_very_biased <- gsub(".10%", "", not_very_biased)
 
+nbiases <- N_bias_shift[!names(N_bias_shift) %in% not_very_biased]
+wbiases<- W_bias_shift[!names(W_bias_shift) %in% not_very_biased]
+
+
 
 
 
@@ -53,5 +57,11 @@ not_very_biased <- unique(c(names(N_bias_shift), names(W_bias_shift)))
 not_very_biased <- gsub(".10%", "", not_very_biased)
 
 
+bias_shift <- do.call("c", lapply(test, mean))
 
 
+bias_shift <- do.call("rbind", lapply(test, quantile, probs=c(0.025, 0.5, 0.975)))
+
+lapply(test, function(x) x[,1] + x[,2])
+
+definitely_biased <- rownames(bias_shift) [bias_shift[,1]>0]
