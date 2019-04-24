@@ -28,22 +28,22 @@ PP_noreac <- pickps.h.post.predict.dmc(samples_top, save.simulation=T,
                                        pickps_other=pmot_rates[o2])
 
 effects <- get.effects.dmc(PP, fun= get.diff.normalized.ldC)
-effects$S <- c("Word Trial", "Non-word Trial")
+effects$S <- c("Word", "Non-word")
 effects$model <- "full"
 
 noreac_effects <- get.effects.dmc(PP_noreac, fun= get.diff.normalized.ldC)
-noreac_effects$S <- c("Word Trial", "Non-word Trial")
+noreac_effects$S <- c("Word", "Non-word")
 noreac_effects$model <- "no reactive"
 
 all_effects <- rbind(effects, noreac_effects)
 
 
 effects <- get.effects.dmc(PP[!names(PP) %in% not_very_biased], fun= get.diff.normalized.ldC)
-effects$S <- c("Word Trial", "Non-word Trial")
+effects$S <- c("Word", "Non-word")
 effects$model <- "full"
 
 noreac_effects <- get.effects.dmc(PP_noreac[!names(PP_noreac) %in% not_very_biased], fun= get.diff.normalized.ldC)
-noreac_effects$S <- c("Word Trial", "Non-word Trial")
+noreac_effects$S <- c("Word", "Non-word")
 noreac_effects$model <- "no reactive"
 
 all_effects <- rbind(effects, noreac_effects)
@@ -51,7 +51,7 @@ all_effects <- rbind(effects, noreac_effects)
 
 
 Ottrial_effects <- get.effects.dmc(PP, fun= get.diff.OT.normalized.ldC)
-Ottrial_effects$S <- c("Word Trial", "Non-word Trial")
+Ottrial_effects$S <- c("Word", "Non-word")
 Ottrial_effects$model <- "OT trial"
 Ottrial_effects$mean <- NA
 Ottrial_effects$lower <- NA
@@ -73,6 +73,47 @@ ggplot(all_effects, aes(factor(S),mean)) +
   geom_point(stat = "identity",aes(col=model), size=3) +
   geom_errorbar(aes(ymax = upper, ymin = lower, width = 0.2, col = model)) +
   geom_point(aes(y= data, col=isPM), pch=21, size=4, colour="black")+
-  xlab("Emphasis") + ylab("Improvement to ldt with relevant caution instructions") +
-  geom_line(aes(y=data, group=interaction(isPM, model)), linetype=2) + facet_grid(.~model)
+  xlab("Emphasis") + ylab("Bias Effect")
+
+
+
+
+
+effects <- get.effects.dmc(PP[names(PP) %in% definitely_biased], fun= get.diff.PM.OT.normalized.ldC)
+effects$S <- c("Word", "Non-word")
+effects$model <- "full"
+
+noreac_effects <- get.effects.dmc(PP_noreac[names(PP_noreac) %in% definitely_biased], fun= get.diff.PM.OT.normalized.ldC)
+noreac_effects$S <- c("Word", "Non-word")
+noreac_effects$model <- "no reactive"
+
+all_effects <- rbind(effects, noreac_effects)
+
+ggplot(all_effects, aes(factor(S),mean)) + 
+  geom_point(stat = "identity",aes(col=model), size=3) +
+  geom_errorbar(aes(ymax = upper, ymin = lower, width = 0.2, col = model)) +
+  geom_point(aes(y= data, col=isPM), pch=21, size=4, colour="black")+
+  xlab("Emphasis") + ylab("Bias Magnification on PM trials") +  geom_hline(yintercept=0, linetype=2)
+
+
+
+av.posts <- c("B.*.one.N"  ,  "B.*.two.N"  ,  "B.*.one.W"   ,
+  "B.*.two.W")
+
+PPs_avthres <- avps.h.post.predict.dmc(samples_top, save.simulation=T, av.posts=
+                            av.posts)
+
+
+
+rates <- colnames(samples_top[[1]]$theta)[grep("p", colnames(samples_top[[1]]$theta))]
+OTrates <- rates[!grepl("P", rates)]
+Irates <- OTrates[!grepl("I", OTrates)]
+avrates <- gsub("U", "*", Irates)
+
+
+PPs_avthres <- avps.h.post.predict.dmc(samples_top, save.simulation=T, av.posts=
+                            c(av.posts, avrates))
+
+
+#  + 
 
