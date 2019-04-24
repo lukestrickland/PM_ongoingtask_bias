@@ -171,27 +171,10 @@ se=function(df,facs,sfac="s",dvnam="y",ws=TRUE,ci="SE") {
   }
 }
 
-se2=function(df,facs,sfac="s",dvnam="y",ws=TRUE,ci="SE") {
-  df <- df[,c(names(df)[names(df)!=dvnam],dvnam)]
-  dvnam=dim(df)[2]
-  for (i in 1:(dim(df)[2]-1)) df[,i] <- factor(df[,i])  
-  if (ws) {
-    smns <- tapply(df[,dvnam],df[,sfac],mean, na.rm=T)
-    smn <- df[,sfac]
-    levels(smn) <- smns
-    df[,dvnam] <- df[,dvnam]-as.numeric(as.character(smn))  
-  }
-  mn=tapply(df[,dvnam],df[,facs],mean, na.rm=T)
-  se=tapply(df[,dvnam],df[,facs],sd, na.rm=T)
-  ns <- length(levels(df[,sfac]))
-  if (ws) {
-    m <- prod(dim(se))
-    ns <- ns*(m-1)/m
-  }
-  if (is.na(ci)) mn else {
-    if (ci=="SE") se/sqrt(ns) else
-     qt(1-(100-ci)/200,ns-1)*se/sqrt(ns)
-  }
+se2 <- function(x, M) {
+  ns <- length(x)
+  ns <- ns * (M-1)/M
+  sqrt(var(x)/ns)
 }
 
 add.bars=function(mn,se,xvals=NA,len=.1,antiprobit=FALSE,col="black") {
