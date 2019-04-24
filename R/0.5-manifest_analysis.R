@@ -322,8 +322,9 @@ wsAnova(as.data.frame(participant_pm_ldt_errs_aov))
 
 #response times
 participant_ldt_cRTs <-
-  okdats %>% group_by(s, S, PM, day) %>% 
+  okdats %>% 
   mutate(lderr= (S=="PMW" & R=="Nonword")|(S=="PMN" & R =="Word")) %>% 
+  group_by(s, S, PM, day) %>% 
   filter(R != "PM" & isPM) %>% 
   summarise(meanRT = mean(RT)) %>% group_by(s) %>% 
   mutate(M = length(meanRT))
