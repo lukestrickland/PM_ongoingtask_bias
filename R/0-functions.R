@@ -170,10 +170,28 @@ se=function(df,facs,sfac="s",dvnam="y",ws=TRUE,ci="SE") {
   }
 }
 
-se2 <- function(x, M) {
-  ns <- length(x)
-  ns <- ns * (M-1)/M
-  sqrt(var(x)/ns)
+se2 <- function(df,facs,sfac="s",dvnam="y",ws=TRUE,ci="SE") {
+  df <- as.data.frame(df)
+  df <- df[,c(names(df)[names(df)!=dvnam],dvnam)]
+  dvnam=dim(df)[2]
+  for (i in 1:(dim(df)[2]-1)) df[,i] <- factor(df[,i])  
+  if (ws) {
+    smns <- tapply(df[,dvnam],df[,sfac],mean, na.rm=T)
+    smn <- df[,sfac]
+    levels(smn) <- smns
+    df[,dvnam] <- df[,dvnam]-as.numeric(as.character(smn))  
+  }
+  mn=tapply(df[,dvnam],df[,facs],mean, na.rm=T)
+  se=tapply(df[,dvnam],df[,facs],sd, na.rm=T)
+  ns <- length(levels(df[,sfac]))
+  if (ws) {
+    m <- prod(dim(se))
+    ns <- ns*(m-1)/m
+  }
+  if (is.na(ci)) mn else {
+    if (ci=="SE") se/sqrt(ns) else
+     qt(1-(100-ci)/200,ns-1)*se/sqrt(ns)
+  }
 }
 
 add.bars=function(mn,se,xvals=NA,len=.1,antiprobit=FALSE,col="black") {
@@ -344,62 +362,58 @@ label_effects <- function (effects) {
 }
 
 
-get.diff.OT.normalized.ldC <- function(df) {
-  
-  NcwwW <- length(df$RT[df$S=="ww" & df$E=="I" & df$R=="W"])/
-    length(df$RT[df$S=="ww" & df$E=="I" & df$R!="P"])
-  
-  WcwwW <- length(df$RT[df$S=="ww" & df$E=="U" & df$R=="W"])/
-  length(df$RT[df$S=="ww" & df$E=="U" & df$R!="P"])
-  
-  NcnnN <- length(df$RT[df$S=="nn" & df$E=="I" & df$R=="N"])/
-    length(df$RT[df$S=="nn" & df$E=="I" & df$R!="P"])
-  
-  WcnnN <- length(df$RT[df$S=="nn" & df$E=="U" & df$R=="N"])/
-  length(df$RT[df$S=="nn" & df$E=="U" & df$R!="P"])
-  
-  out <- c(NcwwW - WcwwW,  WcnnN - NcnnN)
-  names(out) <- c("NcwwW - WcwwW",  "WcnnN - NcnnN")
-  out
+# get.diff.OT.normalized.ldC <- function(df) {
+#   
+#   NcwwW <- length(df$RT[df$S=="ww" & df$E=="I" & df$R=="W"])/
+#     length(df$RT[df$S=="ww" & df$E=="I" & df$R!="P"])
+#   
+#   WcwwW <- length(df$RT[df$S=="ww" & df$E=="U" & df$R=="W"])/
+#   length(df$RT[df$S=="ww" & df$E=="U" & df$R!="P"])
+#   
+#   NcnnN <- length(df$RT[df$S=="nn" & df$E=="I" & df$R=="N"])/
+#     length(df$RT[df$S=="nn" & df$E=="I" & df$R!="P"])
+#   
+#   WcnnN <- length(df$RT[df$S=="nn" & df$E=="U" & df$R=="N"])/
+#   length(df$RT[df$S=="nn" & df$E=="U" & df$R!="P"])
+#   
+#   out <- c(NcwwW - WcwwW,  WcnnN - NcnnN)
+#   names(out) <- c("NcwwW - WcwwW",  "WcnnN - NcnnN")
+#   out
 
-get.diff.PM.OT.normalized.ldC <- function(df) {
-  
-  NcpwW <- length(df$RT[df$S=="pw" & df$E=="I" & df$R=="W"])/
-    length(df$RT[df$S=="pw" & df$E=="I" & df$R!="P"])
-  
-  WcpwW <- length(df$RT[df$S=="pw" & df$E=="U" & df$R=="W"])/
-  length(df$RT[df$S=="pw" & df$E=="U" & df$R!="P"])
-  
-  NcpnN <- length(df$RT[df$S=="pn" & df$E=="I" & df$R=="N"])/
-    length(df$RT[df$S=="pn" & df$E=="I" & df$R!="P"])
-  
-  WcpnN <- length(df$RT[df$S=="pn" & df$E=="U" & df$R=="N"])/
-  length(df$RT[df$S=="pn" & df$E=="U" & df$R!="P"])
-  
-  out <- c(NcpwW - WcpwW,  WcpnN - NcpnN)  
-  
-  NcwwW <- length(df$RT[df$S=="ww" & df$E=="I" & df$R=="W"])/
-    length(df$RT[df$S=="ww" & df$E=="I" & df$R!="P"])
-  
-  WcwwW <- length(df$RT[df$S=="ww" & df$E=="U" & df$R=="W"])/
-  length(df$RT[df$S=="ww" & df$E=="U" & df$R!="P"])
-  
-  NcnnN <- length(df$RT[df$S=="nn" & df$E=="I" & df$R=="N"])/
-    length(df$RT[df$S=="nn" & df$E=="I" & df$R!="P"])
-  
-  WcnnN <- length(df$RT[df$S=="nn" & df$E=="U" & df$R=="N"])/
-  length(df$RT[df$S=="nn" & df$E=="U" & df$R!="P"])
-  
-  out2 <- c(NcwwW - WcwwW,  WcnnN - NcnnN)
-  
-  out <- out-out2
-  
-  names(out) <- c("reacmagNbias","reacmagWbias")
-
-  out
-}
-  
-
-  
-
-
+# get.diff.PM.OT.normalized.ldC <- function(df) {
+#   
+#   NcpwW <- length(df$RT[df$S=="pw" & df$E=="I" & df$R=="W"])/
+#     length(df$RT[df$S=="pw" & df$E=="I" & df$R!="P"])
+#   
+#   WcpwW <- length(df$RT[df$S=="pw" & df$E=="U" & df$R=="W"])/
+#   length(df$RT[df$S=="pw" & df$E=="U" & df$R!="P"])
+#   
+#   NcpnN <- length(df$RT[df$S=="pn" & df$E=="I" & df$R=="N"])/
+#     length(df$RT[df$S=="pn" & df$E=="I" & df$R!="P"])
+#   
+#   WcpnN <- length(df$RT[df$S=="pn" & df$E=="U" & df$R=="N"])/
+#   length(df$RT[df$S=="pn" & df$E=="U" & df$R!="P"])
+#   
+#   out <- c(NcpwW - WcpwW,  WcpnN - NcpnN)  
+#   
+#   NcwwW <- length(df$RT[df$S=="ww" & df$E=="I" & df$R=="W"])/
+#     length(df$RT[df$S=="ww" & df$E=="I" & df$R!="P"])
+#   
+#   WcwwW <- length(df$RT[df$S=="ww" & df$E=="U" & df$R=="W"])/
+#   length(df$RT[df$S=="ww" & df$E=="U" & df$R!="P"])
+#   
+#   NcnnN <- length(df$RT[df$S=="nn" & df$E=="I" & df$R=="N"])/
+#     length(df$RT[df$S=="nn" & df$E=="I" & df$R!="P"])
+#   
+#   WcnnN <- length(df$RT[df$S=="nn" & df$E=="U" & df$R=="N"])/
+#   length(df$RT[df$S=="nn" & df$E=="U" & df$R!="P"])
+#   
+#   out2 <- c(NcwwW - WcwwW,  WcnnN - NcnnN)
+#   
+#   out <- out-out2
+#   
+#   names(out) <- c("reacmagNbias","reacmagWbias")
+# 
+#   out
+# }
+#   
