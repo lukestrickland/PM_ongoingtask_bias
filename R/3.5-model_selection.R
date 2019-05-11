@@ -1,0 +1,15 @@
+source("dmc/dmc.R")
+source("dmc/dmc_extras.R")
+load_model ("LBA","lbaN_B.R")
+
+#select between models with DIC (summed over participants)
+#Top model versus no practice effects (fixed rate over D)
+load("samples/samples_top.RData")
+load("samples/samples_fixed_day_V.RData")
+load("samples/samples_fixedV.RData")
+load("samples/samples_fixedB.RData")
+
+h.IC.dmc(samples_top, DIC=TRUE)
+h.IC.dmc(samples_fixed_day_V, DIC=TRUE)
+h.IC.dmc(samples_fixedV, DIC=TRUE)
+h.IC.dmc(samples_fixedB, DIC=TRUE)
