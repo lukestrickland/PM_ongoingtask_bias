@@ -113,8 +113,6 @@ p_vector_top <-   c(
   mean_v.fa=-1
 )
 
-check.p.vector(p_vector, model_top)
-
 #Set priors. Uniform distribution for t0 between 0 and 1. 
 #Normal distribution for other parameters with mean equal to p_vector.
 #prior SDs = 1 for thresholds, 2 for rates.
@@ -182,8 +180,6 @@ p_vector_fixedB <-   c(
   mean_v.IpwP2= 1, mean_v.IpnP2= 1,
   mean_v.fa=-1
 )
-
-check.p.vector(p_vector_fixedB, model_fixedB)
 
 p_prior_fixedB <-   prior.p.dmc(
   p1=c(t0=1, p_vector_fixedB[-(1)]),
@@ -370,8 +366,6 @@ p_vector_fixed_day_V <-   c(
   mean_v.IpwP= 1, mean_v.IpnP= 1,
   mean_v.fa=-1
 )
-
-check.p.vector(p_vector, model_fixed_day_V)
 
 p_prior_fixed_day_V <-   prior.p.dmc(
   p1=c(t0=1, p_vector_fixed_day_V[-(1)]),
