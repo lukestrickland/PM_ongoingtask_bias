@@ -7,13 +7,14 @@ theme_set(theme_simple())
 # PP <-
 #   h.post.predict.dmc(samples_top,
 #                      save.simulation = TRUE,
-#                      cores = length(samples_top))
-# save(PP, file="img/pp_top.RData")
+#                      cores = length(samples_top),
+#                      n.post=200)
+# save(PP, file="img/PP.RData")
 
-load("img/pp_top.RData")
+load("img/PP.RData")
 
 #get data summaries
-# fit_summaries <- GET.fitgglist.dmc(PP, factors = c("S", "E"))
+fit_summaries <- GET.fitgglist.dmc(PP, factors = c("S", "E"))
 # save(fit_summaries, file="img/fit_summaries_top.RData")
 load("img/fit_summaries_top.RData")
 

@@ -1,6 +1,6 @@
 source("dmc/dmc.R")
 source("dmc/dmc_extras.R")
-source ("R/0-functions.R")
+source ("R/functions.R")
 load_model ("LBA","lbaN_B.R")
 load("samples/samples_top.RData")
 
@@ -45,8 +45,8 @@ W_shift_B <- function(thetas) (thetas[,"B.U.one.W",, drop=F] + thetas[,"B.U.one.
 zandp(samples_top, W_shift_B )  
                               
 
-P_shift_B <- function(thetas) (thetas[,"B.U.one.P",, drop=F] + thetas[,"B.U.one.P",, drop=F])/2 -
-                              (thetas[,"B.I.one.P",, drop=F] + thetas[,"B.I.one.P",, drop=F])/2 
+P_shift_B <- function(thetas) (thetas[,"B.I.one.P",, drop=F] + thetas[,"B.I.one.P",, drop=F])/2 -
+                              (thetas[,"B.U.one.P",, drop=F] + thetas[,"B.U.one.P",, drop=F])/2 
   
 zandp(samples_top, P_shift_B)  
                               
@@ -218,6 +218,25 @@ zandp(samples_top, pne_bias_shift)
 
 
 
+#How much is a shift of 0.1 compared with actual shift
+
+get_thetashiftNI12 <- function(thetas) ((thetas[,"B.I.one.N",, drop=F] - 
+                                      thetas[,"B.U.one.N",, drop=F] ) +
+                                   (thetas[,"B.I.two.N",, drop=F] - 
+                                      thetas[,"B.U.two.N",, drop=F] )) /2
+
+thetashiftNI12 <- group.inference.dist(samples_top, get_thetashiftNI12)
+
+mean(thetashiftNI12 )
+
+get_thetashiftWU12 <- function(thetas) ((thetas[,"B.U.one.W",, drop=F] - 
+                                      thetas[,"B.I.one.W",, drop=F] ) +
+                                   (thetas[,"B.U.two.W",, drop=F] - 
+                                      thetas[,"B.I.two.W",, drop=F] )) /2
+
+thetashiftWU12 <- group.inference.dist(samples_top, get_thetashiftWU12)
+
+mean(thetashiftWU12)
 
 
 
