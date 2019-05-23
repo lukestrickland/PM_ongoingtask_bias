@@ -1,3 +1,4 @@
+source("R/functions.R")
 codes <- read.delim("data/codes")
 fns <- list.files("data")
 fns <- fns[!fns=="codes"]
