@@ -1,537 +1,266 @@
-source("R/0-functions.R")
+source("R/functions.R")
 source("dmc/dmc.R")
 source("dmc/dmc_extras.R")
 load_model ("LBA","lbaN_B.R")
 load("samples/samples_top.RData")
 theme_set(theme_simple())
-load("~/OTbias_PM/img/pp_top.RData")
+load("~/OTbias_PM/img/PP.RData")
 
-get.pc <- function(df){
-  out<- cbind(df,(df$mean/df$data) *100)
-  names(out)[length(out)] <- "pc"
-  out
-}
-
-###
-
-# get.diff.OT.Rtype <- function(df) {
-# 
-#   NcW <- length(df$RT[df$E=="I" & df$R=="W" & (df$S=="ww"|df$S=="nn")])/
-#     length(df$RT[df$E=="I"& (df$S=="ww"|df$S=="nn")])
-#   
-#   WcW <- length(df$RT[df$E=="U" & df$R=="W"& (df$S=="ww"|df$S=="nn")])/
-#   length(df$RT[df$E=="U"& (df$S=="ww"|df$S=="nn")])
-#   
-#   NcN <- length(df$RT[df$E=="I" & df$R=="N"& (df$S=="ww"|df$S=="nn")])/
-#   length(df$RT[df$E=="I"& (df$S=="ww"|df$S=="nn")])
-#   
-#   WcN <- length(df$RT[df$E=="U" & df$R=="N"& (df$S=="ww"|df$S=="nn")])/
-#   length(df$RT[df$E=="U"& (df$S=="ww"|df$S=="nn")])
-# 
-#   out <- c(NcW-WcW, NcN-WcN)
-#   names(out) <- c("NcW-WcW", "NcN-WcN")
-#   out
-# }
-# 
-# get.effects.dmc(PP, get.diff.OT.Rtype)
-
-
-av.posts <- c("B.*.one.N"  ,  "B.*.two.N"  ,  "B.*.one.W"   ,
-  "B.*.two.W")
-
-PPs_avthres <- avps.h.post.predict.dmc(samples_top, save.simulation=T, av.posts=
-                            av.posts)
-# 
-# get.effects.dmc(PPs_avthres, get.diff.OT.Rtype)
-
-
-rates <- colnames(samples_top[[1]]$theta)[grep("mean_v", colnames(samples_top[[1]]$theta))]
-OTrates <- rates[!grepl("P", rates)]
-Urates <- OTrates[grepl("U", OTrates)]
-avrates <- gsub("U", "*", Urates)
-
-PPs_avrates <- avps.h.post.predict.dmc(samples_top, save.simulation=T, av.posts=
-                          avrates)
-
-# 
-# get.effects.dmc(PPs_avrates, get.diff.OT.Rtype)
-
-
-
-PPs_avthresrates <- avps.h.post.predict.dmc(samples_top, save.simulation=T, av.posts=
-                            c(av.posts, avrates))
-# 
-# get.effects.dmc(PPs_avthresrates, get.diff.OT.Rtype)
-
-
-get.diff.PM.Rtype <- function(df) {
-
-  NcW <- length(df$RT[df$E=="I" & df$R=="W" & (df$S=="pw"|df$S=="pn")])/
-    length(df$RT[df$E=="I"& (df$S=="pw"|df$S=="pn")])
-  
-  WcW <- length(df$RT[df$E=="U" & df$R=="W"& (df$S=="pw"|df$S=="pn")])/
-  length(df$RT[df$E=="U"& (df$S=="pw"|df$S=="pn")])
-  
-  NcN <- length(df$RT[df$E=="I" & df$R=="N"& (df$S=="pw"|df$S=="pn")])/
-  length(df$RT[df$E=="I"& (df$S=="pw"|df$S=="pn")])
-  
-  WcN <- length(df$RT[df$E=="U" & df$R=="N"& (df$S=="pw"|df$S=="pn")])/
-  length(df$RT[df$E=="U"& (df$S=="pw"|df$S=="pn")])
-
-  out <- c(NcW-WcW+WcN-NcN)
-  names(out) <- c("NcW-WcW+WcN-NcN")
-  out
-}
-
-full_shift <- get.effects.dmc(PP, get.diff.PM.Rtype)
-full_shift$model <- "Full Model"
-
-avthres_shift <- get.effects.dmc(PPs_avthres, get.diff.PM.Rtype)
-avthres_shift$model <- "Avg Thresholds"
-
-avrates_shift <- get.effects.dmc(PPs_avrates, get.diff.PM.Rtype)
-avrates_shift$model <- "Avg Rates"
-
-avthresrates_shift <- get.effects.dmc(PPs_avthresrates, get.diff.PM.Rtype)
-avthresrates_shift$model <- "Avg Thresholds and Rates"
-
-all_effects <- rbind(full_shift, avthres_shift, avrates_shift, avthresrates_shift)
-
-all_effects$model <- factor(all_effects$model, levels=c("Full Model",
-                                                        "Avg Rates",
-                                                        "Avg Thresholds",
-                                                        "Avg Thresholds and Rates"))
-get.pc(all_effects)
-
-
-PM_bias <- ggplot(all_effects, aes(y=mean, x=model))+ geom_point(size=3) +
-  geom_errorbar(aes(ymax = upper, ymin = lower)) + geom_hline(aes(yintercept=data), linetype=2)+
-  ylab("Nc non-word decrease + Wc word decrease\n (PM trials)") +xlab("Model")+ylim(-0.04,0.18)
-
-
-
-
-get.diff.OT.Rtype <- function(df) {
-
-
-  NcW <- length(df$RT[df$E=="I" & df$R=="W" & (df$S=="ww"|df$S=="nn")])/
-    length(df$RT[df$E=="I"& (df$S=="ww"|df$S=="nn")])
-  
-  WcW <- length(df$RT[df$E=="U" & df$R=="W"& (df$S=="ww"|df$S=="nn")])/
-  length(df$RT[df$E=="U"& (df$S=="ww"|df$S=="nn")])
-  
-  NcN <- length(df$RT[df$E=="I" & df$R=="N"& (df$S=="ww"|df$S=="nn")])/
-  length(df$RT[df$E=="I"& (df$S=="ww"|df$S=="nn")])
-  
-  WcN <- length(df$RT[df$E=="U" & df$R=="N"& (df$S=="ww"|df$S=="nn")])/
-  length(df$RT[df$E=="U"& (df$S=="ww"|df$S=="nn")])
-  
-  out <- c(NcW-WcW+WcN-NcN)
-  names(out) <- c("NcW-WcW+WcN-NcN")
-  out
-}
-
-full_shift <- get.effects.dmc(PP, get.diff.OT.Rtype)
-full_shift$model <- "Full Model"
-
-avthres_shift <- get.effects.dmc(PPs_avthres, get.diff.OT.Rtype)
-avthres_shift$model <- "Avg Thresholds"
-
-avrates_shift <- get.effects.dmc(PPs_avrates, get.diff.OT.Rtype)
-avrates_shift$model <- "Avg Rates"
-
-avthresrates_shift <- get.effects.dmc(PPs_avthresrates, get.diff.OT.Rtype)
-avthresrates_shift$model <- "Avg Thresholds and Rates"
-
-all_effects <- rbind(full_shift, avthres_shift, avrates_shift, avthresrates_shift)
-
-all_effects$model <- factor(all_effects$model, levels=c("Full Model",
-                                                        "Avg Rates",
-                                                        "Avg Thresholds",
-                                                        "Avg Thresholds and Rates"))
-
-get.pc(all_effects)
-
-
-OT_bias <- ggplot(all_effects, aes(y=mean, x=model))+ geom_point(size=3) +
-  geom_errorbar(aes(ymax = upper, ymin = lower)) + geom_hline(aes(yintercept=data), linetype=2)+
-  ylab("Nc non-word decrease + Wc word decrease\n (non-PM trials)") +xlab("")+ylim(-0.04,0.18)
-
-
-grid.arrange(OT_bias, PM_bias)
-
-
-
-
-
-
-
-get.diff.PM.RT <- function(df) {
-
-  NcW <- mean(df$RT[df$E=="I" & df$R=="W" & (df$S=="pw"|df$S=="pn")])
-  WcW <- mean(df$RT[df$E=="U" & df$R=="W"& (df$S=="pw"|df$S=="pn")])
-  
-  NcN <- mean(df$RT[df$E=="I" & df$R=="N"& (df$S=="pw"|df$S=="pn")])
-  WcN <- mean(df$RT[df$E=="U" & df$R=="N"& (df$S=="pw"|df$S=="pn")])
-
-  out <- c((WcW-NcW) + (NcN-WcN))
-  names(out) <- c("(WcW-NcW) + (NcN-WcN)")
-  out
-}
-
-full_shift <- get.effects.dmc(PP, get.diff.PM.RT)
-full_shift$model <- "Full Model"
-
-avthres_shift <- get.effects.dmc(PPs_avthres, get.diff.PM.RT)
-avthres_shift$model <- "Avg Thresholds"
-
-avrates_shift <- get.effects.dmc(PPs_avrates, get.diff.PM.RT)
-avrates_shift$model <- "Avg Rates"
-
-avthresrates_shift <- get.effects.dmc(PPs_avthresrates, get.diff.PM.RT)
-avthresrates_shift$model <- "Avg Thresholds and Rates"
-
-all_effects <- rbind(full_shift, avthres_shift, avrates_shift, avthresrates_shift)
-
-all_effects$model <- factor(all_effects$model, levels=c("Full Model",
-                                                        "Avg Rates",
-                                                        "Avg Thresholds",
-                                                        "Avg Thresholds and Rates"))
-get.pc(all_effects)
-
-
-PM_bias <- ggplot(all_effects, aes(y=mean, x=model))+ geom_point(size=3) +
-  geom_errorbar(aes(ymax = upper, ymin = lower)) + geom_hline(aes(yintercept=data), linetype=2)+
-  ylab("Nc non-word RT increase + Wc word RT increase\n (PM trials)") +xlab("Model")
-
-
-
-
-get.diff.OT.RT <- function(df) {
-
-  NcW <- mean(df$RT[df$E=="I" & df$R=="W" & (df$S=="ww"|df$S=="nn")])
-  WcW <- mean(df$RT[df$E=="U" & df$R=="W"& (df$S=="ww"|df$S=="nn")])
-  
-  NcN <- mean(df$RT[df$E=="I" & df$R=="N"& (df$S=="ww"|df$S=="nn")])
-  WcN <- mean(df$RT[df$E=="U" & df$R=="N"& (df$S=="ww"|df$S=="nn")])
-
-  out <- c((WcW-NcW) + (NcN-WcN))
-  names(out) <- c("(WcW-NcW) + (NcN-WcN)")
-  out
-}
-
-full_shift <- get.effects.dmc(PP, get.diff.OT.RT)
-full_shift$model <- "Full Model"
-
-avthres_shift <- get.effects.dmc(PPs_avthres, get.diff.OT.RT)
-avthres_shift$model <- "Avg Thresholds"
-
-avrates_shift <- get.effects.dmc(PPs_avrates, get.diff.OT.RT)
-avrates_shift$model <- "Avg Rates"
-
-avthresrates_shift <- get.effects.dmc(PPs_avthresrates, get.diff.OT.RT)
-avthresrates_shift$model <- "Avg Thresholds and Rates"
-
-all_effects <- rbind(full_shift, avthres_shift, avrates_shift, avthresrates_shift)
-
-all_effects$model <- factor(all_effects$model, levels=c("Full Model",
-                                                        "Avg Rates",
-                                                        "Avg Thresholds",
-                                                        "Avg Thresholds and Rates"))
-
-get.pc(all_effects)
-
-OT_bias <- ggplot(all_effects, aes(y=mean, x=model))+ geom_point(size=3) +
-  geom_errorbar(aes(ymax = upper, ymin = lower)) + geom_hline(aes(yintercept=data), linetype=2)+
-  ylab("Nc non-word RT increase + Wc word RT increase\n (nonPM trials)") +xlab("Model")
-
-
-grid.arrange(OT_bias, )
-
-
-OT_bias+ylim(-0.08,0.2)
-PM_bias+ylim(-0.08,0.2)
-
-
-
-get.pc(all_effects)
-
-
-
-get.diff.OT.RT <- function(df) {
-
-
-  NcW <- length(df$RT[df$E=="I" & df$R=="W" & (df$S=="ww"|df$S=="nn")])/
-    length(df$RT[df$E=="I"& (df$S=="ww"|df$S=="nn")])
-  
-  WcW <- length(df$RT[df$E=="U" & df$R=="W"& (df$S=="ww"|df$S=="nn")])/
-  length(df$RT[df$E=="U"& (df$S=="ww"|df$S=="nn")])
-  
-  NcN <- length(df$RT[df$E=="I" & df$R=="N"& (df$S=="ww"|df$S=="nn")])/
-  length(df$RT[df$E=="I"& (df$S=="ww"|df$S=="nn")])
-  
-  WcN <- length(df$RT[df$E=="U" & df$R=="N"& (df$S=="ww"|df$S=="nn")])/
-  length(df$RT[df$E=="U"& (df$S=="ww"|df$S=="nn")])
-  
-  out <- c(NcW-WcW+WcN-NcN)
-  names(out) <- c("NcW-WcW+WcN-NcN")
-  out
-}
-
-full_shift <- get.effects.dmc(PP, get.diff.OT.RT)
-full_shift$model <- "Full Model"
-
-avthres_shift <- get.effects.dmc(PPs_avthres, get.diff.OT.RT)
-avthres_shift$model <- "Avg Thresholds"
-
-avrates_shift <- get.effects.dmc(PPs_avrates, get.diff.OT.RT)
-avrates_shift$model <- "Avg Rates"
-
-avthresrates_shift <- get.effects.dmc(PPs_avthresrates, get.diff.OT.RT)
-avthresrates_shift$model <- "Avg Thresholds and Rates"
-
-all_effects <- rbind(full_shift, avthres_shift, avrates_shift, avthresrates_shift)
-
-all_effects$model <- factor(all_effects$model, levels=c("Full Model",
-                                                        "Avg Rates",
-                                                        "Avg Thresholds",
-                                                        "Avg Thresholds and Rates"))
-
-
-OT_bias <- ggplot(all_effects, aes(y=mean, x=model))+ geom_point(size=3) +
-  geom_errorbar(aes(ymax = upper, ymin = lower)) + geom_hline(aes(yintercept=data), linetype=2)+
-  ylab("Nc non-word decrease + Wc word decrease\n (dashed line = data)") +xlab("")+ylim(-0.04,0.18)
-
-
-grid.arrange(OT_bias, PM_bias)
-
-
-
-
-
-
-
-
-
-
-# 
-# 
-# 
-# ot_rates <- colnames(samples_top[[1]]$theta)[
-#   grep("ww|nn", colnames(samples_top[[1]]$theta))]
-# 
-# o1 <- order(paste(substr(ot_rates,8,8), substr(ot_rates,10,12)))
-# 
-# 
-# pmot_rates <- colnames(samples_top[[1]]$theta)[
-#   grepl("(pw|pn)", colnames(samples_top[[1]]$theta)) & ! grepl(
-#     "P",colnames(samples_top[[1]]$theta)
-#   )]
-# 
-# o2 <- order(paste(substr(pmot_rates,8,8), substr(pmot_rates,10,12)))
-# 
-# cbind(ot_rates[o1], pmot_rates[o2])
-# 
-# 
-# PP_noreac <- pickps.h.post.predict.dmc(samples_top, save.simulation=T,
-#                                        pickps_set = ot_rates[o1],
-#                                        pickps_other=pmot_rates[o2])
-# 
-# effects <- get.effects.dmc(PP, fun= get.diff.normalized.ldC)
-# effects$S <- c("Word", "Non-word")
-# effects$model <- "full"
-# 
-# noreac_effects <- get.effects.dmc(PP_noreac, fun= get.diff.normalized.ldC)
-# noreac_effects$S <- c("Word", "Non-word")
-# noreac_effects$model <- "no reactive"
-# 
-# all_effects <- rbind(effects, noreac_effects)
-# 
-# 
-# effects <- get.effects.dmc(PP[!names(PP) %in% not_very_biased], fun= get.diff.normalized.ldC)
-# effects$S <- c("Word", "Non-word")
-# effects$model <- "full"
-# 
-# noreac_effects <- get.effects.dmc(PP_noreac[!names(PP_noreac) %in% not_very_biased], fun= get.diff.normalized.ldC)
-# noreac_effects$S <- c("Word", "Non-word")
-# noreac_effects$model <- "no reactive"
-# 
-# all_effects <- rbind(effects, noreac_effects)
-# 
-# 
-# 
-# Ottrial_effects <- get.effects.dmc(PP, fun= get.diff.OT.normalized.ldC)
-# Ottrial_effects$S <- c("Word", "Non-word")
-# Ottrial_effects$model <- "OT trial"
-# Ottrial_effects$mean <- NA
-# Ottrial_effects$lower <- NA
-# Ottrial_effects$upper <- NA
-# 
-# all_effects <- rbind(effects, noreac_effects, Ottrial_effects )
-# all_effects[7:8,] <- all_effects[5:6,]
-# 
-# all_effects$model[5:6] <- "no reactive"
-# all_effects$model[7:8] <- "full"
-# 
-# all_effects$isPM <- "PM trial"
-# all_effects$isPM[5:8] <- "nonPM trial"
-# 
-# 
-# 
-# #just examine ongoing task thresholds
-# ggplot(all_effects, aes(factor(S),mean)) + 
-#   geom_point(stat = "identity",aes(col=model), size=3) +
-#   geom_errorbar(aes(ymax = upper, ymin = lower, width = 0.2, col = model)) +
-#   geom_point(aes(y= data, col=isPM), pch=21, size=4, colour="black")+
-#   xlab("Emphasis") + ylab("Bias Effect")
-# 
-# 
-# 
-# 
-# 
-# effects <- get.effects.dmc(PP[names(PP) %in% definitely_biased], fun= get.diff.PM.OT.normalized.ldC)
-# effects$S <- c("Word", "Non-word")
-# effects$model <- "full"
-# 
-# noreac_effects <- get.effects.dmc(PP_noreac[names(PP_noreac) %in% definitely_biased], fun= get.diff.PM.OT.normalized.ldC)
-# noreac_effects$S <- c("Word", "Non-word")
-# noreac_effects$model <- "no reactive"
-# 
-# all_effects <- rbind(effects, noreac_effects)
-# 
-# ggplot(all_effects, aes(factor(S),mean)) + 
-#   geom_point(stat = "identity",aes(col=model), size=3) +
-#   geom_errorbar(aes(ymax = upper, ymin = lower, width = 0.2, col = model)) +
-#   geom_point(aes(y= data, col=isPM), pch=21, size=4, colour="black")+
-#   xlab("Emphasis") + ylab("Bias Magnification on PM trials") +  geom_hline(yintercept=0, linetype=2)
-# 
-# 
-# 
+####Simulate posterior predictives with null effects on some parameters
 # av.posts <- c("B.*.one.N"  ,  "B.*.two.N"  ,  "B.*.one.W"   ,
 #   "B.*.two.W")
 # 
 # PPs_avthres <- avps.h.post.predict.dmc(samples_top, save.simulation=T, av.posts=
-#                             av.posts)
+#                                                                         av.posts,
+#                                                                        n.post=200)
 # 
-# 
-# 
-# rates <- colnames(samples_top[[1]]$theta)[grep("p", colnames(samples_top[[1]]$theta))]
+# save(PPs_avthres, file="img/PPs_avthres.RData")
+
+load("img/PPs_avthres.RData")
+
+# rates <- colnames(samples_top[[1]]$theta)[grep("mean_v", 
+#                                                colnames(samples_top[[1]]$theta))]
 # OTrates <- rates[!grepl("P", rates)]
-# Irates <- OTrates[!grepl("I", OTrates)]
-# avrates <- gsub("U", "*", Irates)
+# Urates <- OTrates[grepl("U", OTrates)]
+# avrates <- gsub("U", "*", Urates)
 # 
+# PPs_avrates <- avps.h.post.predict.dmc(samples_top, save.simulation=T, av.posts=
+#                                                                         avrates,
+#                                        n.post=200)
 # 
-# PPs_avthres <- avps.h.post.predict.dmc(samples_top, save.simulation=T, av.posts=
-#                             c(av.posts, avrates))
+# save(PPs_avrates, file= "img/PPs_avrates.RData")
+
+load("img/PPs_avrates.RData")
+
+# PPs_avthresrates <- avps.h.post.predict.dmc(samples_top, save.simulation=T, av.posts=
+#                                                              c(av.posts, avrates),
+#                                             n.post=200)
 # 
+# save(PPs_avthresrates, file= "img/PPs_avthresrates.RData")
+
+load("img/PPs_avthresrates.RData")
 # 
-# #  + 
+# #Make special samples object with basically no rate variability
+# samples_nosv <- samples_top
 # 
-# #load a model where no c onstant sdvF
-# library("abind")
-# special_samples <- samples_top
-# 
-# sdvf <- array(0.01, dim=c(168,1,180))
+# sdvf <- array(0.00001, dim=c(168,1,180))
 # dimnames(sdvf) <- list(NULL, "sd_v.f", NULL)
-#   
-# for (i in 1:length(special_samples)){
-#   
-#   special_samples[[i]]$theta <- abind(
-#     special_samples[[i]]$theta, sdvf, along=2
+# 
+# for (i in 1:length(samples_nosv)){
+# 
+#   samples_nosv[[i]]$theta <- abind(
+#     samples_nosv[[i]]$theta, sdvf, along=2
 #   )
 #   
+#   samples_nosv[[i]]$theta[,"sd_v.t",] <- 0.00001
+# 
 # }
 # 
-# PP_nosv1 <- pickps.h.post.predict.dmc(special_samples, save.simulation=T,
-#                                        pickps_set = "sd_v.t",
-#                                        pickps_other="sd_v.f",
-#                                       special_model = model_top)
+# #have to create a "special" model where sdv_f is not fixed in order
+# #to simulate this
+# source("R/5.5-specify_model_top_noscalingparameter.R")
 # 
-# PP_nosv1 <- pickps.h.post.predict.dmc(special_samples, save.simulation=T,
+# PP_nosv1 <- pickps.h.post.predict.dmc(samples_nosv, save.simulation=T,
 #                                        pickps_set = c(),
 #                                        pickps_other=c(),
-#                                       special_model = model_top)
+#                                       special_model = model_top,
+#                                       n.post=200)
 # 
+# save(PP_nosv1, file= "img/PP_nosv1.RData")
+
+load("img/PP_nosv1.RData")
+
 # 
+# #Make special samples with imposing big bias boost
+# samples_bigBshift <- samples_top
 # 
+# for (i in 1:length(samples_bigBshift)){
+#   
+#   samples_bigBshift[[i]]$theta[,"B.I.one.N",] <- 
+#     samples_bigBshift[[i]]$theta[,"B.I.one.N",] + 0.1
+#   samples_bigBshift[[i]]$theta[,"B.I.two.N",] <- 
+#     samples_bigBshift[[i]]$theta[,"B.I.two.N",] + 0.1
+#   
+#   samples_bigBshift[[i]]$theta[,"B.U.one.W",] <- 
+#     samples_bigBshift[[i]]$theta[,"B.U.one.W",] + 0.1
+#   samples_bigBshift[[i]]$theta[,"B.U.two.W",] <- 
+#     samples_bigBshift[[i]]$theta[,"B.U.two.W",] + 0.1
 # 
+# }
 # 
-# mapmeanv <-
-#   empty.map(list(
-#     S = c("nn", "ww", "pn", "pw"),
-#     E = c("I", "U"),
-#     D = c("one", "two"),
-#     R = c("N", "W", "P")
-#   ), 
-#   levels=c(
-#    "InnN1","IwwN1","IpnN1","InnW1",
-#    "IwwW1","IpwN1","UpwN1","UpnW1",
-#    "IpnW1","IpwW1","IpnP1","IpwP1", 
-#    "UnnN1","UwwN1","UpnN1", "UnnW1",
-#    "UwwW1","UpwW1","UpnP1","UpwP1",
-#    "InnN2","IwwN2","IpnN2","InnW2",
-#    "IwwW2","IpwN2","UpwN2","UpnW2",
-#    "IpnW2","IpwW2","IpnP2","IpwP2",
-#    "UnnN2","UwwN2","UpnN2", "UnnW2",
-#    "UwwW2", "UpwW2","UpnP2","UpwP2",
-#    "fa"
-#    )
-#   )
+# PP_bigBshift <- h.post.predict.dmc(samples_bigBshift,
+#                      save.simulation = TRUE,
+#                      cores = length(samples_bigBshift),
+#                      n.post=200)
 # 
-# mapmeanv[1:48] <- c(
-#  "InnN1","IwwN1","IpnN1","IpwN1",
-#  "UnnN1","UwwN1","UpnN1","UpwN1",
-#  "InnN2","IwwN2","IpnN2","UpwN2",
-#  "UnnN2","UwwN2","UpnN2","IpwN2",
-# 
-#  "InnW1","IwwW1","IpnW1","IpwW1",
-#  "UnnW1","UwwW1","UpnW1","UpwW1",
-#  "InnW2","IwwW2","IpnW2","IpwW2",
-#  "UnnW2","UwwW2","UpnW2","UpwW2",
-# 
-#  "fa","fa","IpnP1","IpwP1",
-#  "fa","fa","UpnP1","UpwP1",
-#  "fa","fa","IpnP2","IpwP2",
-#  "fa","fa","UpnP2","UpwP2"
-# )
-# 
-# mapsdv <-
-#   empty.map(list(
-#     S = c("nn", "ww", "pn", "pw"),
-#     E = c("I", "U"),
-#     D = c("one", "two"),
-#     R = c("N", "W", "P")
-#   ),
-#   levels = c("t", "f"))
-# 
-# mapsdv[1:48] <- c(
-#   rep(c("t","f","f","f"), 4), 
-#   rep(c("f","t","f","f"), 4), 
-#   rep(c("f","f","t","t"), 4)
-# )
-# 
-# #Specify model. Note that I am using the flexible lba (lbaN_B) which allows
-# #specifying different numbers of accumulators because it uses a faster 
-# #way to calculate likelihoods. Hence setting N=3 as a constant.
-# 
-# model_top <- model.dmc(
-#   factors = list(
-#     S = c("nn", "ww", "pn", "pw"),
-#     E = c("I", "U"),
-#     D = c("one", "two")
-#   ), responses = c("N", "W", "P"),
-#   p.map = list(
-#     A = "1", B = c("E", "D", "R"),
-#     t0 = c("1"), mean_v = c("MAPMV"),
-#     sd_v = c("MAPSDV"),st0 = "1",N = "1"
-#   ),
-#   match.map = list(
-#     M = list( ww = "W", nn = "N", 
-#               pn = "P", pw = "P"
-#     ),
-#     MAPMV = mapmeanv,
-#     MAPSDV = mapsdv
-#   ),
-#   constants = c( st0 = 0, N = 3)
-# )
-# 
+# save(PP_bigBshift, file= "img/PP_bigBshift.RData")
+
+load("img/PP_bigBshift.RData")
+
+
+# Examine relevant posterior predicted quantities
+
+full_shift_Rtype_PM <- get.effects.dmc(PP, get.diff.PM.Rtype)
+full_shift_Rtype_PM$model <- "Full Model"
+
+avthres_shift_Rtype_PM <- get.effects.dmc(PPs_avthres, get.diff.PM.Rtype)
+avthres_shift_Rtype_PM$model <- "Avg Thresholds"
+
+avrates_shift_Rtype_PM <- get.effects.dmc(PPs_avrates, get.diff.PM.Rtype)
+avrates_shift_Rtype_PM$model <- "Avg Rates"
+
+avthresrates_shift_Rtype_PM <- get.effects.dmc(PPs_avthresrates, get.diff.PM.Rtype)
+avthresrates_shift_Rtype_PM$model <- "Avg Thresholds and Rates"
+
+all_effects_Rtype_PM <- rbind(full_shift_Rtype_PM, 
+                              avthres_shift_Rtype_PM, 
+                              avrates_shift_Rtype_PM, 
+                              avthresrates_shift_Rtype_PM)
+
+all_effects_Rtype_PM$model <- factor(all_effects_Rtype_PM$model, levels=c(
+                                                        "Full Model",
+                                                        "Avg Rates",
+                                                        "Avg Thresholds",
+                                                        "Avg Thresholds and Rates"
+                                                        )
+                                     )
+
+get.pc.effect.predicted(all_effects_Rtype_PM)
+
+PM_bias_Rtype <- ggplot(all_effects_Rtype_PM, aes(y=mean, x=model))+ 
+  geom_point(size=3) + geom_errorbar(aes(ymax = upper, ymin = lower)) +
+  geom_hline(aes(yintercept=data), linetype=2)+ ylab(
+    "Nc non-word decrease + Wc word decrease\n (PM trials)") +
+  xlab("Model")+ ylim(-0.04,0.18)
+
+
+full_shift_Rtype_nonPM <- get.effects.dmc(PP, get.diff.OT.Rtype)
+full_shift_Rtype_nonPM$model <- "Full Model"
+
+avthres_shift_Rtype_nonPM <- get.effects.dmc(PPs_avthres, get.diff.OT.Rtype)
+avthres_shift_Rtype_nonPM$model <- "Avg Thresholds"
+
+avrates_shift_Rtype_nonPM <- get.effects.dmc(PPs_avrates, get.diff.OT.Rtype)
+avrates_shift_Rtype_nonPM$model <- "Avg Rates"
+
+avthresrates_shift_Rtype_nonPM <- get.effects.dmc(PPs_avthresrates, get.diff.OT.Rtype)
+avthresrates_shift_Rtype_nonPM$model <- "Avg Thresholds and Rates"
+
+all_effects_Rtype_nonPM <- rbind(full_shift_Rtype_nonPM, 
+                                  avthres_shift_Rtype_nonPM, 
+                                  avrates_shift_Rtype_nonPM, 
+                                  avthresrates_shift_Rtype_nonPM)
+
+get.pc.effect.predicted(all_effects_Rtype_nonPM)
+
+all_effects_Rtype_nonPM$model <- factor(all_effects_Rtype_nonPM$model, levels=c(
+                                                        "Full Model",
+                                                        "Avg Rates",
+                                                        "Avg Thresholds",
+                                                        "Avg Thresholds and Rates"
+                                                        )
+                                        )
+
+OT_bias_Rtype <- ggplot(all_effects_Rtype_nonPM, aes(y=mean, x=model))+ geom_point(size=3) +
+  geom_errorbar(aes(ymax = upper, ymin = lower)) + 
+  geom_hline(aes(yintercept=data), linetype=2)+ ylab(
+    "Nc non-word decrease + Wc word decrease\n (non-PM trials)") +
+  xlab("")+ylim(-0.04,0.18)
+
+grid.arrange(OT_bias_Rtype, PM_bias_Rtype)
+
+
+
+full_shift_RT_PM <- get.effects.dmc(PP, get.diff.PM.RT)
+full_shift_RT_PM$model <- "Full Model"
+
+avthres_shift_RT_PM <- get.effects.dmc(PPs_avthres, get.diff.PM.RT)
+avthres_shift_RT_PM$model <- "Avg Thresholds"
+
+avrates_shift_RT_PM <- get.effects.dmc(PPs_avrates, get.diff.PM.RT)
+avrates_shift_RT_PM$model <- "Avg Rates"
+
+avthresrates_shift_RT_PM <- get.effects.dmc(PPs_avthresrates, get.diff.PM.RT)
+avthresrates_shift_RT_PM$model <- "Avg Thresholds and Rates"
+
+all_effects_RT_PM <- rbind(full_shift_RT_PM, avthres_shift_RT_PM, avrates_shift_RT_PM, avthresrates_shift_RT_PM)
+
+all_effects_RT_PM$model <- factor(all_effects_RT_PM$model, levels=c("Full Model",
+                                                        "Avg Rates",
+                                                        "Avg Thresholds",
+                                                        "Avg Thresholds and Rates"))
+get.pc.effect.predicted(full_shift_RT_PM)
+
+
+PM_bias_RT <- ggplot(all_effects_RT_PM, aes(y=mean, x=model))+ geom_point(size=3) +
+  geom_errorbar(aes(ymax = upper, ymin = lower)) + geom_hline(aes(yintercept=data), linetype=2)+
+  ylab("Nc non-word RT increase + Wc word RT increase\n (PM trials)") +xlab("Model")
+
+
+full_shift_RT_nonPM <- get.effects.dmc(PP, get.diff.OT.RT)
+full_shift_RT_nonPM$model <- "Full Model"
+
+avthres_shift_RT_nonPM <- get.effects.dmc(PPs_avthres, get.diff.OT.RT)
+avthres_shift_RT_nonPM$model <- "Avg Thresholds"
+
+avrates_shift_RT_nonPM <- get.effects.dmc(PPs_avrates, get.diff.OT.RT)
+avrates_shift_RT_nonPM$model <- "Avg Rates"
+
+avthresrates_shift_RT_nonPM <- get.effects.dmc(PPs_avthresrates, get.diff.OT.RT)
+avthresrates_shift_RT_nonPM$model <- "Avg Thresholds and Rates"
+
+all_effects_RT_nonPM  <- rbind(full_shift_RT_nonPM, avthres_shift_RT_nonPM, avrates_shift_RT_nonPM, avthresrates_shift_RT_nonPM)
+
+all_effects_RT_nonPM$model <- factor(all_effects_RT_nonPM$model, levels=c("Full Model",
+                                                        "Avg Rates",
+                                                        "Avg Thresholds",
+                                                        "Avg Thresholds and Rates"))
+
+get.pc.effect.predicted(all_effects_RT_nonPM)
+
+OT_bias_RT <- ggplot(all_effects_RT_nonPM, aes(y=mean, x=model))+ geom_point(size=3) +
+  geom_errorbar(aes(ymax = upper, ymin = lower)) + geom_hline(aes(yintercept=data), linetype=2)+
+  ylab("Nc non-word RT increase + Wc word RT increase\n (nonPM trials)") +xlab("Model")
+
+grid.arrange(PM_bias_RT, OT_bias_RT)
+
+
+
+full_shift_PMperf <- get.effects.dmc(PP, get.diff.PM.perf)
+full_shift_PMperf$model <- "Full Model"
+
+avthres_shift_PMperf <- get.effects.dmc(PPs_avthres, get.diff.PM.perf)
+avthres_shift_PMperf$model <- "Avg Thresholds"
+
+avrates_shift_PMperf <- get.effects.dmc(PPs_avrates, get.diff.PM.perf)
+avrates_shift_PMperf$model <- "Avg Rates"
+
+avthresrates_shift_PMperf <- get.effects.dmc(PPs_avthresrates, get.diff.PM.perf)
+avthresrates_shift_PMperf$model <- "Avg Thresholds and Rates"
+
+nosv1_shift_PMperf <- get.effects.dmc(PP_nosv1, get.diff.PM.perf)
+nosv1_shift_PMperf$model <- "No rate variability"
+
+bigB_shift_PMperf <- get.effects.dmc(PP_bigBshift, get.diff.PM.perf)
+bigB_shift_PMperf$model <- ">2x shift in bias"
+
+
+all_effects_PMperf <- rbind(full_shift_PMperf, avthres_shift_PMperf, 
+                            avrates_shift_PMperf, avthresrates_shift_PMperf,
+                     nosv1_shift_PMperf, bigB_shift_PMperf)
+
+all_effects_PMperf$model <- factor(all_effects_PMperf$model, levels=c("Full Model",
+                                                        "Avg Rates",
+                                                        "Avg Thresholds",
+                                                        "Avg Thresholds and Rates",
+                                                        "No rate variability",
+                                                        ">2x shift in bias"))
+
+ggplot(all_effects_PMperf, aes(y=mean, x=model))+ 
+  geom_hline(aes(yintercept=0), linetype=1,col=2)+ geom_point(size=3) +
+  geom_errorbar(aes(ymax = upper, ymin = lower)) + 
+  geom_hline(aes(yintercept=data), linetype=2)+
+  ylab("Nc non-word PM increase + Wc word PM increase\n") + xlab("Model")
+
+
+all_effects_PMperf

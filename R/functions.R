@@ -221,3 +221,102 @@ label_effects <- function (effects) {
   effects$S[grep("n", rownames(effects))] <- "Non-word Trial"
   effects
 }
+
+
+#functions to calculate quantities for posterior predictive summaries
+
+get.diff.PM.Rtype <- function(df) {
+
+  NcW <- length(df$RT[df$E=="I" & df$R=="W" & (df$S=="pw"|df$S=="pn")])/
+    length(df$RT[df$E=="I"& (df$S=="pw"|df$S=="pn")])
+  
+  WcW <- length(df$RT[df$E=="U" & df$R=="W"& (df$S=="pw"|df$S=="pn")])/
+  length(df$RT[df$E=="U"& (df$S=="pw"|df$S=="pn")])
+  
+  NcN <- length(df$RT[df$E=="I" & df$R=="N"& (df$S=="pw"|df$S=="pn")])/
+  length(df$RT[df$E=="I"& (df$S=="pw"|df$S=="pn")])
+  
+  WcN <- length(df$RT[df$E=="U" & df$R=="N"& (df$S=="pw"|df$S=="pn")])/
+  length(df$RT[df$E=="U"& (df$S=="pw"|df$S=="pn")])
+
+  out <- c(NcW-WcW+WcN-NcN)
+  names(out) <- c("NcW-WcW+WcN-NcN")
+  out
+}
+
+
+get.diff.PM.RT <- function(df) {
+
+  NcW <- mean(df$RT[df$E=="I" & df$R=="W" & (df$S=="pw"|df$S=="pn")])
+  WcW <- mean(df$RT[df$E=="U" & df$R=="W"& (df$S=="pw"|df$S=="pn")])
+  
+  NcN <- mean(df$RT[df$E=="I" & df$R=="N"& (df$S=="pw"|df$S=="pn")])
+  WcN <- mean(df$RT[df$E=="U" & df$R=="N"& (df$S=="pw"|df$S=="pn")])
+
+  out <- c((WcW-NcW) + (NcN-WcN))
+  names(out) <- c("(WcW-NcW) + (NcN-WcN)")
+  out
+}
+
+get.diff.OT.Rtype <- function(df) {
+
+  NcW <- length(df$RT[df$E=="I" & df$R=="W" & (df$S=="ww"|df$S=="nn")])/
+    length(df$RT[df$E=="I"& (df$S=="ww"|df$S=="nn")])
+  
+  WcW <- length(df$RT[df$E=="U" & df$R=="W"& (df$S=="ww"|df$S=="nn")])/
+  length(df$RT[df$E=="U"& (df$S=="ww"|df$S=="nn")])
+  
+  NcN <- length(df$RT[df$E=="I" & df$R=="N"& (df$S=="ww"|df$S=="nn")])/
+  length(df$RT[df$E=="I"& (df$S=="ww"|df$S=="nn")])
+  
+  WcN <- length(df$RT[df$E=="U" & df$R=="N"& (df$S=="ww"|df$S=="nn")])/
+  length(df$RT[df$E=="U"& (df$S=="ww"|df$S=="nn")])
+  
+  out <- c(NcW-WcW+WcN-NcN)
+  names(out) <- c("NcW-WcW+WcN-NcN")
+  out
+}
+
+
+
+get.diff.OT.RT <- function(df) {
+
+  NcW <- mean(df$RT[df$E=="I" & df$R=="W" & (df$S=="ww"|df$S=="nn")])
+  WcW <- mean(df$RT[df$E=="U" & df$R=="W"& (df$S=="ww"|df$S=="nn")])
+  
+  NcN <- mean(df$RT[df$E=="I" & df$R=="N"& (df$S=="ww"|df$S=="nn")])
+  WcN <- mean(df$RT[df$E=="U" & df$R=="N"& (df$S=="ww"|df$S=="nn")])
+
+  out <- c((WcW-NcW) + (NcN-WcN))
+  names(out) <- c("(WcW-NcW) + (NcN-WcN)")
+  out
+}
+
+
+
+get.diff.PM.perf <- function(df) {
+
+  NcNP <- length(df$RT[df$E=="I" & df$R=="P" & df$S=="pn"])/
+    length(df$RT[df$E=="I"& df$S=="pn"])
+  
+  WcNP <- length(df$RT[df$E=="U" & df$R=="P" & df$S=="pn"])/
+  length(df$RT[df$E=="U"& df$S=="pn"])
+  
+  NcWP <- length(df$RT[df$E=="I" & df$R=="P" & df$S=="pw"])/
+    length(df$RT[df$E=="I"& df$S=="pw"])
+  
+  WcWP <- length(df$RT[df$E=="U" & df$R=="P" & df$S=="pw"])/
+  length(df$RT[df$E=="U"& df$S=="pw"])
+  
+  out <- c(NcNP - WcNP+ WcWP - NcWP)
+  names(out) <- c("NcP-WcP+WcP-NcP")
+  out
+}
+
+
+
+get.pc.effect.predicted <- function(df){
+  out<- cbind(df,(df$mean/df$data) *100)
+  names(out)[length(out)] <- "pc"
+  out
+}
