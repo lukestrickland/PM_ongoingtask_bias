@@ -20,7 +20,7 @@ participant_ldt_accs <-
 
 #get mean of mean accs
 ldt_accs <-
-  participant_ldt_accs %>% group_by(S, PM) %>% summarise(mean_meanacc = mean(meanacc))
+  participant_ldt_accs %>% group_by(S, PM) %>% summarise(mean_meanacc = mean(y))
 
 ldt_accs %>% mutate (mean_meanacc=mean_meanacc*100)
 
@@ -96,7 +96,7 @@ PMacc_model <-
 Anova(PMacc_model, type = "II")
 
 participant_PM_accs <-
-  okdats %>% group_by(s, S, PM, day) %>% filter(isPMcue=="PM") %>% 
+  okdats %>% group_by(s, S, PM, day) %>% filter(ispmcue=="PM") %>% 
   summarise(meanacc = mean(R=="PM")) 
 
 PM_accs <-
@@ -104,16 +104,28 @@ PM_accs <-
 
 participant_PM_accs %>% group_by(S, PM) %>% summarise(mean_meanacc = mean(meanacc))
 
-se2(participant_PM_accs, facs=c("S", "PM"), dvnam="meanacc")  
+se2(participant_PM_accs, facs=c("S", "PM"), dvnam="meanacc") *100 
+
+participant_PM_accs %>% group_by(day) %>% summarise(mean_meanacc = mean(meanacc))
+se2(participant_PM_accs, facs=c("day"), dvnam="meanacc") *100
+
+d_PM_accs <- participant_PM_accs %>% group_by(s, day) %>% 
+  summarise(y = mean(meanacc))
+
+t.test (d_PM_accs$y[d_PM_accs$day=="1"], d_PM_accs$y[d_PM_accs$day=="2"], paired=T)
+
+
 
 participant_PM_cRTs <-
   okdats %>% group_by(s, S, PM, day) %>% 
-  filter(R == "PM" & isPM) %>% 
+  filter(R == "PM" & ispmcue=="PM") %>% 
   summarise(meanRT = mean(RT)) %>% group_by(s) %>% 
   mutate(M = length(meanRT))
 
 PM_cRTs <-
-  participant_PM_cRTs %>% group_by(S, PM, day) %>% summarise(mean_meanRT = mean(meanRT))
+  participant_PM_cRTs %>% group_by(S, PM) %>% summarise(mean_meanRT = mean(meanRT))
+
+se2(participant_PM_cRTs, dvnam="meanRT", facs=c("S", "PM"))
 
 PMRT_model <-
   lmer(meanRT ~ S * PM * day + (1 | s),
@@ -123,6 +135,27 @@ Anova(PMRT_model, type = "II")
 
 PM_cRTs_se <-
   participant_PM_cRTs %>% group_by(S, PM, day) %>% summarise(se_meanRT = se2(meanRT, M[1]))
+
+
+PM_cRTs_d <-
+  participant_PM_cRTs %>% group_by(day) %>% summarise(mean_meanRT = mean(meanRT))
+
+PM_cRTs_d
+
+se2(participant_PM_cRTs, dvnam="meanRT", facs=c("day"))
+
+d_PM_RTs <- participant_PM_cRTs %>% group_by(s, day) %>% 
+  summarise(y = mean(meanRT))
+
+t.test (d_PM_RTs$y[d_PM_RTs$day=="1"], d_PM_RTs$y[d_PM_RTs$day=="2"], paired=T)
+
+#PM false alarms
+
+fas <- okdats %>% group_by(s, PM, day, S) %>% filter(ispmcue=="") %>% summarise(farate=mean(R=="PM"))
+
+max(fas$farate) * 100
+min(fas$farate) * 100
+
 
 #PM error type analysis
 PM <- okdats[okdats$ispmcue=="PM",]; PM$S = factor(as.character(PM$S))
@@ -138,9 +171,26 @@ errors <-rbind(PMwe, PMnwe)
 errors <- errors[,c(1,6,2,3,4,5)]
 
 errors %>% group_by(type, PM) %>% summarise(C=mean(y))
+se2(errors, facs=c("type", "PM")) * 100
 
 merr.lmer <- lmer(y ~ S*PM*type*day+(1|s), data=errors)
 Anova(merr.lmer)
+
+e_wcs <- errors %>% filter(PM == "WC") %>% group_by(s, type) %>% 
+  summarise(y = mean(y, na.rm=T))
+
+e_wcs %>% group_by(S) %>% summarise(mean(y, na.rm=T))
+
+t.test(e_wcs$y[e_wcs$type=="w"], e_wcs$y[e_wcs$type=="n"], paired=T)
+
+e_NCs <- errors %>% filter(PM == "NWC") %>% group_by(s, type) %>% 
+  summarise(y = mean(y, na.rm=T))
+
+e_NCs %>% group_by(S) %>% summarise(mean(y, na.rm=T))
+
+t.test(e_NCs$y[e_NCs$type=="w"], e_NCs$y[e_NCs$type=="n"], paired=T)
+
+
 
 PMweRT <- arr2df(tapply(PM$RT[PM$R=="Word"],
                         list(s=PM$s[PM$R=="Word"],PM=PM$PM[PM$R=="Word"], 
@@ -158,9 +208,9 @@ errorRTs$type<- c(rep("werror", length(PMweRT$y)),
 mErt.lmer <- lmer(y ~ S*PM*type*day+(1|s), data=errorRTs)
 Anova(mErt.lmer,type="II")
 
-mneffects(errorRTs, list("S","type", c("PM", "S"),
-                         c("S", "type"), c("PM", "type"),
-                         c("PM", "type", "S"), digits=2))
+mneffects(errorRTs, list( c("PM", "type")), digits=2)
+
+se2(errorRTs, facs=c("PM", "type"))
 
 e_wRTs <- errorRTs %>% filter(type == "werror") %>% group_by(s, PM) %>% 
   summarise(y = mean(y, na.rm=T))

@@ -320,3 +320,15 @@ get.pc.effect.predicted <- function(df){
   names(out)[length(out)] <- "pc"
   out
 }
+
+make_model_table <- function (model_summary) {
+  
+  model_table <- data.frame(df = model_summary$Df, Chisq= model_summary$Chisq, 
+                            p = model_summary$Pr)
+  model_table$Chisq <- round(model_table$Chisq, 2)
+  model_table$p <- format.pval(model_table$p, digits=2, eps= 0.001)
+  model_table$p <- gsub("0\\.", ".", model_table$p)  
+  model_table
+}
+
+
