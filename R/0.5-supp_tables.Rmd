@@ -1,0 +1,172 @@
+---
+title: 'supplementary materials: tables from lmer models'
+author: "ljgs"
+date: "28/05/2019"
+output:
+  word_document: default
+  pdf_document: default
+  html_document: default
+---
+by Luke Strickland
+
+```{r Instructions always, echo=FALSE, results='asis', out.width='65%', fig.cap=""}
+source("../R/functions.R")
+library(dplyr)
+library(lme4)
+library(car)
+library(pander)
+load("../img/okdats_manifest.RData")
+
+# ldacc_model <-
+#   glmer(C ~ S * PM * day + (1 |
+#                         s),
+#         data = okdats[!okdats$ispmcue=="PM" &
+#                         okdats$R != "PM", ],
+#         family = binomial(link = "probit"))
+# 
+# save(ldacc_model, file = "../img/ldacc_model.RData")
+
+load("../img/ldacc_model.RData")
+
+ldacc_summary <- Anova(ldacc_model, type = "II")
+
+ldacc_table <- make_model_table(ldacc_summary)
+# 
+# 
+# participant_ldt_cRTs <-
+#   okdats %>% group_by(s, S, PM, day) %>% 
+#   filter(R != "PM" & !ispmcue=="PM" & as.character(S)==as.character(R)) %>% 
+#   summarise(y = mean(RT)) 
+# 
+# ldRT_model <-
+#   lmer(y ~ S * PM * day + (1 | s),
+#         data = participant_ldt_cRTs)
+# 
+# save(ldRT_model, file = "../img/ldRT_model.RData")
+
+load("../img/ldRT_model.RData")
+
+ldRT_summary <- Anova(ldRT_model, type = "II")
+
+ldRT_table <- make_model_table(ldRT_summary)
+
+
+# PMacc_model <-
+#   glmer(R=="PM" ~ S * PM * day + (1 |
+#                         s),
+#         data = okdats[okdats$ispmcue=="PM",],
+#         family = binomial(link = "probit"))
+# 
+# save(PMacc_model, file = "../img/PMacc_model.RData")
+
+load("../img/PMacc_model.RData")
+
+
+PMacc_summary <- Anova(PMacc_model, type = "II")
+
+PMacc_table <- make_model_table(PMacc_summary)
+
+# 
+# participant_PM_cRTs <- okdats %>% group_by(s, S, PM, day) %>%
+#   filter(R == "PM" & ispmcue == "PM") %>% summarise(meanRT = mean(RT)) %>% 
+#   group_by(s) %>% mutate(M = length(meanRT))
+# 
+# PMRT_model <-
+#   lmer(meanRT ~ S * PM * day + (1 | s),
+#         data = participant_PM_cRTs)
+# 
+# save(PMRT_model, file = "../img/PMRT_model.RData")
+
+load("../img/PMRT_model.RData")
+
+PMRT_summary <- Anova(PMRT_model, type = "II")
+
+PMRT_table <- make_model_table(PMRT_summary)
+
+complete_table <- cbind(ldacc_table[,-1], ldRT_table[,-1], 
+                        PMacc_table[,-1], PMRT_table[,-1])
+
+complete_table <- rbind(
+  c("Acc", "",  "RT", "", 
+    "Acc", "", "RT", "", ""),
+  colnames(complete_table), 
+  complete_table)
+
+colnames(complete_table) <-  c(" ", "LD Task", " ", " ", 
+    " ", " ", "PM Task", " ")
+
+
+print("Main table")
+pandoc.table(complete_table)
+
+
+# #PM error type analysis
+PM <- okdats[okdats$ispmcue=="PM",]; PM$S = factor(as.character(PM$S))
+
+PMwe <- arr2df(tapply(PM$R=="Word",
+                      list(s=PM$s,PM=PM$PM, day = PM$day, S= PM$S), mean))
+PMnwe <- arr2df(tapply(PM$R=="Nonword",
+                       list(s=PM$s,PM=PM$PM, day = PM$day, S= PM$S), mean))
+PMwe$type <- "w"
+PMnwe$type <- "n"
+
+errors <-rbind(PMwe, PMnwe)
+errors <- errors[,c(1,6,2,3,4,5)]
+
+
+# misserr_model <- lmer(y ~ S*PM*type*day+(1|s), data=errors)
+# save(misserr_model, file = "../img/misserr_model.RData")
+
+load("../img/misserr_model.RData")
+
+
+misserr_summary <- Anova(misserr_model, type = "II")
+misserr_table <- make_model_table(misserr_summary)
+
+
+
+PMweRT <- arr2df(tapply(PM$RT[PM$R=="Word"],
+                        list(s=PM$s[PM$R=="Word"],PM=PM$PM[PM$R=="Word"],
+                             day = PM$day[PM$R=="Word"], S= PM$S[PM$R=="Word"]), mean))
+
+PMnweRT <- arr2df(tapply(PM$RT[PM$R=="Nonword"],list(s=PM$s[PM$R=="Nonword"],
+                                                     PM=PM$PM[PM$R=="Nonword"], day =
+                                                       PM$day[PM$R=="Nonword"],
+                                                     S= PM$S[PM$R=="Nonword"]), mean))
+
+errorRTs <- rbind(PMweRT, PMnweRT)
+errorRTs$type<- c(rep("werror", length(PMweRT$y)),
+                  rep("nwerror", length(PMnweRT$y)))
+
+# misserrRT_model <- lmer(y ~ S*PM*type*day+(1|s), data=errorRTs)
+# 
+# save(misserrRT_model, file = "../img/misserrRT_model.RData")
+
+load("../img/misserrRT_model.RData")
+
+
+misserrRT_summary <- Anova(misserrRT_model, type = "II")
+misserrRT_table <- make_model_table(misserrRT_summary)
+
+complete_miss_table <- cbind(misserr_table[,-1], misserrRT_table[,-1])
+
+complete_miss_table <- rbind(colnames(complete_miss_table), 
+  complete_miss_table)
+
+colnames(complete_miss_table) <-  c("Acc", "",  "RT",  
+    "")
+
+print("complete miss table")
+
+pandoc.table(complete_miss_table)
+
+
+
+```
+
+
+
+
+
+
+
