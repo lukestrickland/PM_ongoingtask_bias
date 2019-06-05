@@ -31,29 +31,37 @@ Bs_PM <- ggplot(Bs[Bs$R=="PM",], aes(factor(E),M)) +
   geom_line(aes(group=day, y=M), linetype=2) +
   facet_grid(. ~ R)+ scale_shape_discrete(name="Day")
 
+#these 2 are equivalent
 
-N_shift_B <- function(thetas) (thetas[,"B.I.one.N",, drop=F] + thetas[,"B.I.one.N",, drop=F])/2 - 
-                              (thetas[,"B.U.one.N",, drop=F] + thetas[,"B.U.one.N",, drop=F])/2
+N_shift_B <- function(thetas) (thetas[,"B.I.one.N",, drop=F] + thetas[,"B.I.two.N",, drop=F])/2 - 
+                              (thetas[,"B.U.one.N",, drop=F] + thetas[,"B.U.two.N",, drop=F])/2
+
+
+N_shift_B <- function(thetas) ((thetas[,"B.I.one.N",, drop=F] - thetas[,"B.U.one.N",, drop=F]) +
+                              (thetas[,"B.I.two.N",, drop=F] - thetas[,"B.U.two.N",, drop=F]) )/2
 
 
 zandp(samples_top, N_shift_B )
 
 
-W_shift_B <- function(thetas) (thetas[,"B.U.one.W",, drop=F] + thetas[,"B.U.one.W",, drop=F])/2 -
-                              (thetas[,"B.I.one.W",, drop=F] + thetas[,"B.I.one.W",, drop=F])/2 
+W_shift_B <- function(thetas) (thetas[,"B.U.one.W",, drop=F] + thetas[,"B.U.two.W",, drop=F])/2 -
+                              (thetas[,"B.I.one.W",, drop=F] + thetas[,"B.I.two.W",, drop=F])/2 
+
+W_shift_B <- function(thetas) ((thetas[,"B.U.one.W",, drop=F] - thetas[,"B.I.one.W",, drop=F]) +
+                              (thetas[,"B.U.two.W",, drop=F] - thetas[,"B.I.two.W",, drop=F]) )/2
   
 zandp(samples_top, W_shift_B )  
                               
 
-P_shift_B <- function(thetas) (thetas[,"B.I.one.P",, drop=F] + thetas[,"B.I.one.P",, drop=F])/2 -
-                              (thetas[,"B.U.one.P",, drop=F] + thetas[,"B.U.one.P",, drop=F])/2 
+P_shift_B <- function(thetas) (thetas[,"B.I.one.P",, drop=F] + thetas[,"B.I.two.P",, drop=F])/2 -
+                              (thetas[,"B.U.one.P",, drop=F] + thetas[,"B.U.two.P",, drop=F])/2 
+
+
+P_shift_B <- function(thetas) ((thetas[,"B.I.one.P",, drop=F] - thetas[,"B.U.one.P",, drop=F]) +
+                              (thetas[,"B.I.two.P",, drop=F] - thetas[,"B.U.two.P",, drop=F]) )/2
   
 zandp(samples_top, P_shift_B)  
                               
-
-zandp(samples_top, N_shift_B )
-
-
 
 grid.arrange(Bs_OT, Bs_PM, layout_matrix=matrix(nrow=1, ncol=3, data=c(1,1,2)))
 
@@ -82,40 +90,42 @@ ggplot(mvs[mvs$R!="PM" &mvs$isPM=="PM",], aes(E,M)) +
   geom_line(aes(group=interaction(day, isPM), y=M), linetype=2) +
   facet_grid(ot_match~ot_correct, scales="free")
 
+colnames(mvs)[4] <- "Day"
 ggplot(mvs[mvs$R!="PM" &mvs$isPM=="nonPM",], aes(E,M)) + 
-  geom_point(aes(shape=day), size=3) +
+  geom_point(aes(shape=Day), size=3) +
   geom_errorbar(aes(ymax = M + SD, ymin = M - SD, width = 0.2))+
   ylab("Accumulation Rate") +
-  geom_line(aes(group=interaction(day, isPM), y=M), linetype=2) +
-  facet_grid(ot_match~ot_correct, scales="free")
+  geom_line(aes(group=interaction(Day, isPM), y=M), linetype=2) +
+  facet_grid(ot_match~ot_correct, scales="free") +xlab("Bias Condition")
 
 mvs2 <- mvs
 mvs2$ot_match[mvs2$R=="PM"] <- "PM"
 ggplot(mvs2[mvs2$isPM=="PM",], aes(E,M)) + 
-  geom_point(aes(shape=day), size=3) +
+  geom_point(aes(shape=Day), size=3) +
   geom_errorbar(aes(ymax = M + SD, ymin = M - SD, width = 0.2))+
   ylab("Accumulation Rate") + xlab("Bias Condition") +
-  geom_line(aes(group=interaction(day, isPM), y=M), linetype=2) +
+  geom_line(aes(group=interaction(Day, isPM), y=M), linetype=2) +
   facet_grid(ot_match~ot_correct, scales="free")
-
 
 
 
 ###Check differential reactive control across match/mismatch accumulators
 
-w_bias_shift <- function(thetas) ((thetas[,"mean_v.UwwW1",, drop=F] - thetas[,"mean_v.IwwW1",, drop=F]) +
-                                 (thetas[,"mean_v.UwwW2",, drop=F] - thetas[,"mean_v.IwwW2",, drop=F]))/2
+
+w_bias_shift <- function(thetas) ((thetas[,"mean_v.IwwW1",, drop=F] - thetas[,"mean_v.UwwW1",, drop=F]) +
+                                 (thetas[,"mean_v.IwwW2",, drop=F] - thetas[,"mean_v.UwwW2",, drop=F]))/2
 
 zandp(samples_top, w_bias_shift)
 
-we_bias_shift <- function(thetas) ((thetas[,"mean_v.UnnW1",, drop=F] - thetas[,"mean_v.InnW1",, drop=F]) +
-                                 (thetas[,"mean_v.UnnW2",, drop=F] - thetas[,"mean_v.InnW2",, drop=F]))/2
+we_bias_shift <- function(thetas) ((thetas[,"mean_v.InnW1",, drop=F] - thetas[,"mean_v.UnnW1",, drop=F]) +
+                                 (thetas[,"mean_v.InnW2",, drop=F] - thetas[,"mean_v.UnnW2",, drop=F]))/2
 
 zandp(samples_top, we_bias_shift)
 
 
-n_bias_shift <- function(thetas) ((thetas[,"mean_v.InnN1",, drop=F] - thetas[,"mean_v.UnnN1",, drop=F]) +
-                                 (thetas[,"mean_v.InnN2",, drop=F] - thetas[,"mean_v.UnnN2",, drop=F]))/2
+
+n_bias_shift <- function(thetas) ((thetas[,"mean_v.UnnN1",, drop=F] - thetas[,"mean_v.InnN1",, drop=F]) +
+                                 (thetas[,"mean_v.UnnN2",, drop=F] - thetas[,"mean_v.InnN2",, drop=F]))/2
 
 zandp(samples_top, n_bias_shift)
 
@@ -129,27 +139,28 @@ zandp(samples_top, ne_bias_shift)
 
 
 
+PM_pn <- function(thetas) ((thetas[,"mean_v.IpnP1",, drop=F] - thetas[,"mean_v.UpnP1",, drop=F]) +
+                               (thetas[,"mean_v.IpnP2",, drop=F] - thetas[,"mean_v.UpnP2",, drop=F]))/2
 
-PM_pn <- function(thetas) (thetas[,"mean_v.IpnP1",, drop=F] + thetas[,"mean_v.IpnP2",, drop=F])/2 -
-                               (thetas[,"mean_v.UpnP1",, drop=F] + thetas[,"mean_v.UpnP2",, drop=F])/2
 
+PM_pw <- function(thetas) ((thetas[,"mean_v.IpwP1",, drop=F] - thetas[,"mean_v.UpwP1",, drop=F]) +
+                               (thetas[,"mean_v.IpwP2",, drop=F] - thetas[,"mean_v.UpwP2",, drop=F]))/2
 
-PM_pw <- function(thetas) (thetas[,"mean_v.IpwP1",, drop=F] + thetas[,"mean_v.IpwP2",, drop=F])/2 -
-                               (thetas[,"mean_v.UpwP1",, drop=F] + thetas[,"mean_v.UpwP2",, drop=F])/2
 
 zandp(samples_top, PM_pn)
 zandp(samples_top, PM_pw)
 
 
-PMw_d <- function(thetas)  (thetas[,"mean_v.IpwP2",, drop=F] + thetas[,"mean_v.UpwP2",, drop=F])/2 -
-  (thetas[,"mean_v.IpwP1",, drop=F] + thetas[,"mean_v.UpwP1",, drop=F])/2 
-                              
+PMw_d <- function(thetas)  ((thetas[,"mean_v.IpwP2",, drop=F]  - thetas[,"mean_v.IpwP1",, drop=F])+
+                            (thetas[,"mean_v.UpwP2",, drop=F]  - thetas[,"mean_v.UpwP1",, drop=F]))/2   
+                            
 zandp(samples_top, PMw_d)
 
-PMn_d <- function(thetas)  (thetas[,"mean_v.IpnP2",, drop=F] + thetas[,"mean_v.UpnP2",, drop=F])/2 -
-  (thetas[,"mean_v.IpnP1",, drop=F] + thetas[,"mean_v.UpnP1",, drop=F])/2 
-                              
+PMn_d <- function(thetas)  ((thetas[,"mean_v.IpnP2",, drop=F]  - thetas[,"mean_v.IpnP1",, drop=F])+
+                            (thetas[,"mean_v.UpnP2",, drop=F]  - thetas[,"mean_v.UpnP1",, drop=F]))/2   
+                            
 zandp(samples_top, PMn_d)
+
 
 
 Ireac_Match_w <- function(thetas) ((thetas[,"mean_v.IwwW1",, drop=F] - thetas[,"mean_v.IpwW1",, drop=F]) +

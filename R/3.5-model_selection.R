@@ -13,6 +13,3 @@ h.IC.dmc(samples_top, DIC=TRUE)
 h.IC.dmc(samples_fixed_day_V, DIC=TRUE)
 h.IC.dmc(samples_fixedV, DIC=TRUE)
 h.IC.dmc(samples_fixedB, DIC=TRUE)
-
-#
-load_model ("LBA","lbaN_B.R")

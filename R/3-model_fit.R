@@ -14,7 +14,7 @@ theme_set(theme_simple())
 load("img/PP.RData")
 
 #get data summaries
-fit_summaries <- GET.fitgglist.dmc(PP, factors = c("S", "E"))
+# fit_summaries <- GET.fitgglist.dmc(PP, factors = c("S", "E"))
 # save(fit_summaries, file="img/fit_summaries_top.RData")
 load("img/fit_summaries_top.RData")
 

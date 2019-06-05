@@ -98,6 +98,54 @@ load("img/PP_nosv1.RData")
 load("img/PP_bigBshift.RData")
 
 
+
+load("img/PPs_avthresrates.RData")
+# 
+# # #Make special samples object with basically no rate variability
+# samples_nosvbigB <- samples_top
+# 
+# sdvf <- array(0.00001, dim=c(168,1,180))
+# dimnames(sdvf) <- list(NULL, "sd_v.f", NULL)
+# 
+# for (i in 1:length(samples_nosvbigB)){
+# 
+#   samples_nosvbigB[[i]]$theta <- abind(
+#     samples_nosvbigB[[i]]$theta, sdvf, along=2
+#   )
+# 
+#   samples_nosvbigB[[i]]$theta[,"sd_v.t",] <- 0.00001
+# 
+# }
+# 
+# for (i in 1:length(samples_nosvbigB)){
+# 
+#   samples_nosvbigB[[i]]$theta[,"B.I.one.N",] <-
+#     samples_nosvbigB[[i]]$theta[,"B.I.one.N",] + 0.1
+#   samples_nosvbigB[[i]]$theta[,"B.I.two.N",] <-
+#     samples_nosvbigB[[i]]$theta[,"B.I.two.N",] + 0.1
+# 
+#   samples_nosvbigB[[i]]$theta[,"B.U.one.W",] <-
+#     samples_nosvbigB[[i]]$theta[,"B.U.one.W",] + 0.1
+#   samples_nosvbigB[[i]]$theta[,"B.U.two.W",] <-
+#     samples_nosvbigB[[i]]$theta[,"B.U.two.W",] + 0.1
+# 
+# }
+# #
+# # #have to create a "special" model where sdv_f is not fixed in order
+# # #to simulate this
+# source("R/5.5-specify_model_top_noscalingparameter.R")
+# 
+# PP_nosv1_bigB <- pickps.h.post.predict.dmc(samples_nosvbigB, save.simulation=T,
+#                                        pickps_set = c(),
+#                                        pickps_other=c(),
+#                                       special_model = model_top,
+#                                       n.post=200)
+# 
+# save(PP_nosv1_bigB, file= "img/PP_nosv1_bigB.RData")
+# load("img/PP_nosv1_bigB.RData")
+
+
+
 # Examine relevant posterior predicted quantities
 
 full_shift_Rtype_PM <- get.effects.dmc(PP, get.diff.PM.Rtype)
@@ -130,8 +178,10 @@ get.pc.effect.predicted(all_effects_Rtype_PM)
 PM_bias_Rtype <- ggplot(all_effects_Rtype_PM, aes(y=mean, x=model))+ 
   geom_point(size=3) + geom_errorbar(aes(ymax = upper, ymin = lower)) +
   geom_hline(aes(yintercept=data), linetype=2)+ ylab(
-    "Nc non-word decrease + Wc word decrease\n (PM trials)") +
-  xlab("Model")+ ylim(-0.04,0.18)
+    "Shift in Response Type \n(PM trial)") +
+  xlab("Model")
+
+#+ ylim(-0.04,0.18)
 
 
 full_shift_Rtype_nonPM <- get.effects.dmc(PP, get.diff.OT.Rtype)
@@ -164,8 +214,10 @@ all_effects_Rtype_nonPM$model <- factor(all_effects_Rtype_nonPM$model, levels=c(
 OT_bias_Rtype <- ggplot(all_effects_Rtype_nonPM, aes(y=mean, x=model))+ geom_point(size=3) +
   geom_errorbar(aes(ymax = upper, ymin = lower)) + 
   geom_hline(aes(yintercept=data), linetype=2)+ ylab(
-    "Nc non-word decrease + Wc word decrease\n (non-PM trials)") +
-  xlab("")+ylim(-0.04,0.18)
+    "Shift in Response Type \n(nonPM trial)") +
+  xlab("")
+
+#+ylim(-0.04,0.18)
 
 grid.arrange(OT_bias_Rtype, PM_bias_Rtype)
 
@@ -194,7 +246,7 @@ get.pc.effect.predicted(full_shift_RT_PM)
 
 PM_bias_RT <- ggplot(all_effects_RT_PM, aes(y=mean, x=model))+ geom_point(size=3) +
   geom_errorbar(aes(ymax = upper, ymin = lower)) + geom_hline(aes(yintercept=data), linetype=2)+
-  ylab("Nc non-word RT increase + Wc word RT increase\n (PM trials)") +xlab("Model")
+  ylab("Shift in Response Times \n (PM trials)") +xlab("Model")
 
 
 full_shift_RT_nonPM <- get.effects.dmc(PP, get.diff.OT.RT)
@@ -220,7 +272,7 @@ get.pc.effect.predicted(all_effects_RT_nonPM)
 
 OT_bias_RT <- ggplot(all_effects_RT_nonPM, aes(y=mean, x=model))+ geom_point(size=3) +
   geom_errorbar(aes(ymax = upper, ymin = lower)) + geom_hline(aes(yintercept=data), linetype=2)+
-  ylab("Nc non-word RT increase + Wc word RT increase\n (nonPM trials)") +xlab("Model")
+  ylab("Shift in Response Times \n (nonPM trials)") +xlab("Model")
 
 grid.arrange(PM_bias_RT, OT_bias_RT)
 
@@ -260,7 +312,7 @@ ggplot(all_effects_PMperf, aes(y=mean, x=model))+
   geom_hline(aes(yintercept=0), linetype=1,col=2)+ geom_point(size=3) +
   geom_errorbar(aes(ymax = upper, ymin = lower)) + 
   geom_hline(aes(yintercept=data), linetype=2)+
-  ylab("Nc non-word PM increase + Wc word PM increase\n") + xlab("Model")
+  ylab("Summed effects of bias on PM accuracy") + xlab("Model")
 
 
 all_effects_PMperf

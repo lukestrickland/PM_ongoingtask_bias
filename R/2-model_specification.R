@@ -2,7 +2,7 @@ load("img/okdats.RData")
 source("dmc/dmc.R")
 load_model("LBA", "lbaN_B.R")
 
-.IC.d#set up map for evidence accumulation rates
+#set up map for evidence accumulation rates
 #Note that nonword caution is coded as I and word caution as U, to avoid
 #grepping problems in DMC's model.dmc function.
 

@@ -238,8 +238,10 @@ get.diff.PM.Rtype <- function(df) {
   
   WcN <- length(df$RT[df$E=="U" & df$R=="N"& (df$S=="pw"|df$S=="pn")])/
   length(df$RT[df$E=="U"& (df$S=="pw"|df$S=="pn")])
-
-  out <- c(NcW-WcW+WcN-NcN)
+# 
+#   out <- c(NcW-WcW+WcN-NcN)
+#   names(out) <- c("NcW-WcW+WcN-NcN")
+  out <- mean(c((NcW-WcW), (WcN-NcN)))
   names(out) <- c("NcW-WcW+WcN-NcN")
   out
 }
@@ -253,8 +255,12 @@ get.diff.PM.RT <- function(df) {
   NcN <- mean(df$RT[df$E=="I" & df$R=="N"& (df$S=="pw"|df$S=="pn")])
   WcN <- mean(df$RT[df$E=="U" & df$R=="N"& (df$S=="pw"|df$S=="pn")])
 
-  out <- c((WcW-NcW) + (NcN-WcN))
+  # out <- c((WcW-NcW) + (NcN-WcN))
+  # names(out) <- c("(WcW-NcW) + (NcN-WcN)")
+  
+  out <- mean(c((WcW-NcW),(NcN-WcN)))
   names(out) <- c("(WcW-NcW) + (NcN-WcN)")
+  
   out
 }
 
@@ -272,8 +278,12 @@ get.diff.OT.Rtype <- function(df) {
   WcN <- length(df$RT[df$E=="U" & df$R=="N"& (df$S=="ww"|df$S=="nn")])/
   length(df$RT[df$E=="U"& (df$S=="ww"|df$S=="nn")])
   
-  out <- c(NcW-WcW+WcN-NcN)
+  # out <- c(NcW-WcW+WcN-NcN)
+  # names(out) <- c("NcW-WcW+WcN-NcN")
+  
+  out <- mean(c((NcW-WcW), (WcN-NcN)))
   names(out) <- c("NcW-WcW+WcN-NcN")
+  
   out
 }
 
@@ -287,8 +297,12 @@ get.diff.OT.RT <- function(df) {
   NcN <- mean(df$RT[df$E=="I" & df$R=="N"& (df$S=="ww"|df$S=="nn")])
   WcN <- mean(df$RT[df$E=="U" & df$R=="N"& (df$S=="ww"|df$S=="nn")])
 
-  out <- c((WcW-NcW) + (NcN-WcN))
+  # out <- c((WcW-NcW) + (NcN-WcN))
+  # names(out) <- c("(WcW-NcW) + (NcN-WcN)")
+  
+  out <- mean(c((WcW-NcW),(NcN-WcN)))
   names(out) <- c("(WcW-NcW) + (NcN-WcN)")
+  
   out
 }
 
@@ -307,9 +321,12 @@ get.diff.PM.perf <- function(df) {
   
   WcWP <- length(df$RT[df$E=="U" & df$R=="P" & df$S=="pw"])/
   length(df$RT[df$E=="U"& df$S=="pw"])
-  
+  # 
   out <- c(NcNP - WcNP+ WcWP - NcWP)
   names(out) <- c("NcP-WcP+WcP-NcP")
+  
+  # out <- mean(c((NcNP-WcNP), (WcWP - NcWP)))
+  # names(out) <- c("NcP-WcP+WcP-NcP")
   out
 }
 

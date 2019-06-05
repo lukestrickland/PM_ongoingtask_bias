@@ -83,7 +83,8 @@ PMRT_summary <- Anova(PMRT_model, type = "II")
 
 PMRT_table <- make_model_table(PMRT_summary)
 
-complete_table <- cbind(ldacc_table[,-1], ldRT_table[,-1], 
+complete_table <- cbind(rownames(ldacc_summary),
+                        ldacc_table[,-1], ldRT_table[,-1], 
                         PMacc_table[,-1], PMRT_table[,-1])
 
 complete_table <- rbind(
@@ -92,7 +93,7 @@ complete_table <- rbind(
   colnames(complete_table), 
   complete_table)
 
-colnames(complete_table) <-  c(" ", "LD Task", " ", " ", 
+colnames(complete_table) <-  c( "Effects", " ", "LD Task", " ", " ", 
     " ", " ", "PM Task", " ")
 
 
@@ -148,7 +149,8 @@ load("../img/misserrRT_model.RData")
 misserrRT_summary <- Anova(misserrRT_model, type = "II")
 misserrRT_table <- make_model_table(misserrRT_summary)
 
-complete_miss_table <- cbind(misserr_table[,-1], misserrRT_table[,-1])
+complete_miss_table <- cbind(rownames(misserrRT_summary),
+                             misserr_table[,-1], misserrRT_table[,-1])
 
 complete_miss_table <- rbind(colnames(complete_miss_table), 
   complete_miss_table)
