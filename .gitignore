@@ -3,3 +3,4 @@
 .Rhistory
 *.html
 *.docx
+.Rproj.user

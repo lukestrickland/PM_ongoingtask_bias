@@ -4,8 +4,8 @@ author: "ljgs"
 date: "28/05/2019"
 output:
   word_document: default
-  pdf_document: default
   html_document: default
+  pdf_document: default
 ---
 by Luke Strickland
 
@@ -49,6 +49,30 @@ load("../img/ldRT_model.RData")
 ldRT_summary <- Anova(ldRT_model, type = "II")
 
 ldRT_table <- make_model_table(ldRT_summary)
+
+
+
+# 
+# participant_ldt_eRTs <-
+#   okdats %>% group_by(s, S, PM, day) %>%
+#   filter(R != "PM" & !ispmcue=="PM" & as.character(S)!=as.character(R)) %>%
+#   summarise(y = mean(RT))
+# 
+# ldeRT_model <-
+#   lmer(y ~ S * PM * day + (1 | s),
+#         data = participant_ldt_eRTs)
+# 
+# save(ldeRT_model, file = "../img/ldeRT_model.RData")
+
+load("../img/ldeRT_model.RData")
+
+ldeRT_summary <- Anova(ldeRT_model, type = "II")
+
+ldeRT_table <- make_model_table(ldeRT_summary)
+
+
+
+
 
 
 # PMacc_model <-
@@ -163,6 +187,13 @@ print("complete miss table")
 pandoc.table(complete_miss_table)
 
 
+
+```
+Error Rts for QJEP reviewer
+
+```{r new_Review, echo=FALSE, results='asis', out.width='65%', fig.cap=""}
+
+pandoc.table(cbind(rownames(ldeRT_summary), ldeRT_table))
 
 ```
 
