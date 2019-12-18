@@ -59,17 +59,27 @@ for (i in 1:length(fns)){
   #Note that I cut the first two trials of each quarter and 
   #block anyway, so there is no issue cutting at the end of quarters
   
-  baderrs <- c(FALSE, head(baderr, -1))
-  badSs <- c(FALSE, head(badS, -1))|c(FALSE,FALSE, head(badS, -2))
-  badRs <- c(FALSE, head(badR, -1))|c(FALSE,FALSE, head(badR, -2))
-  dat$trialcut <- baderrs|badSs|badRs
-  
-  #cut said trials and also any
-  #trials where participants pressed an impossible response key
-  dat <- dat[!dat$trialcut,]
-  dat <- dat[!is.na(dat$R),]
+  dat$baderrs <- c(FALSE, head(baderr, -1))
+  dat$badSs <- c(FALSE, head(badS, -1))|c(FALSE,FALSE, head(badS, -2))
+  dat$badRs <- c(FALSE, head(badR, -1))|c(FALSE,FALSE, head(badR, -2))
+  dat$trialcut <- dat$baderrs|dat$badSs|dat$badRs
+
   if (i==1)  dats <- dat  else dats <- rbind(dats,dat)
 }
+
+length_full <- length(dats$RT)
+#trials excluded due to being after break
+100*length(c(1, 2, 111, 112, 221, 222, 331, 332, 441, 442, 551, 552))/660
+#Proportion of data excluded due to bad LD errors
+100*sum(dats$baderrs)/length(dats$RT)
+#Proportion of data excluded ddue to following PM trials
+100*sum(dats$badSs|dats$badRs)/length(dats$RT)
+#proportion of wrong key (not in assigned keys)
+100*sum(is.na(dats$R))/length(dats$RT)
+
+dats <- dats[!dats$trialcut,]
+dats <- dats[!is.na(dats$R),]
+
 
 #Remove trials after breaks
 okdats <-
@@ -85,7 +95,25 @@ okdats$S[okdats$ispmcue=="PM"&okdats$S=="Nonword"]<- "PMN"
 okdats$S<- factor(okdats$S)
 okdats$s<-factor(okdats$s)
 
+length(okdats$RT)/ length_full
+
 okdats <- clean(okdats)
-okdats <- okdats[,!colnames(okdats) %in% "trialcut"]
+okdats <- okdats[,!colnames(okdats) %in% c("trialcut",
+                                           "badSs", "baderrs",
+                                           "badRs")]
 ##Saving file for subsequent computational modelling and "manifest analysis"
-save(okdats,file="img/okdats_manifest.RData")
+#save(okdats,file="img/okdats_manifest.RData")
+
+#New revision:check change in parser does not affect data
+new <- okdats
+load("~/OTbias_PM/img/okdats_manifest.RData")
+#No difference
+all.equal(okdats, new, check.attributes=FALSE)
+
+#More than 2000 trials per participants as claimed in paper
+table(okdats$s)
+
+#PM trial numbers all solid in final df
+table(okdats$s[okdats$ispmcue=="PM"], 
+      okdats$S[okdats$ispmcue=="PM"], 
+      okdats$PM[okdats$ispmcue=="PM"])
