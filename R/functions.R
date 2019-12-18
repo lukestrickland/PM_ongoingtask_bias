@@ -23,6 +23,30 @@ clean <- function(df) {
   df
 }
 
+# clean <- function(df) {
+#   dfc <- df
+#   n=tapply(df$RT,list(df$s, df$PMt),length)
+#   ns=tapply(df$RT,list(df$s, df$PMt),length)
+#   mn=tapply(df$RT,list(df$s, df$PMt),mean)
+#   sd=tapply(df$RT,list(df$s, df$PMt),IQR)
+#   upper <- mn+3*(sd/1.349)
+#   lower <- 0.2
+#   bad <- logical(dim(df)[1])
+#   levs <- paste(df$s,df$PMt,sep=".")
+#   for (i in levels(df$s)) for (j in levels(df$PMt)) {
+#     lev <- paste(i,j,sep=".")      
+#     bad[levs==lev] <- df[levs==lev,"RT"] > upper[i,j]
+#   }
+#   df=df[!bad,]
+#   nok=tapply(df$RT,list(df$s,df$PMt),length)
+#   pbad=100-100*nok/n
+#   print(aperm(round(pbad,1),c(2,1)))
+#   # pbad=100-100*nok/ns
+#   # print(sort(round(pbad,1)))  
+#   # print(mean(pbad,na.rm=T))
+#   df
+# }
+
 wsAnova=function(dat,SStype=3,spss=F) {
   has.car=require(car)  
   if (!has.car) return("No \"car\"package, no ANOVA\n") 
