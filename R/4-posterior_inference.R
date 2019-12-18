@@ -2,7 +2,11 @@ source("dmc/dmc.R")
 source("dmc/dmc_extras.R")
 source ("R/functions.R")
 load_model ("LBA","lbaN_B.R")
+
 load("samples/samples_top.RData")
+#Reviewer suggestion: try vary t0 by day.
+# load("samples/samples_top_t0.RData")
+samples_top <- samples_top_t0
 
 msds <- get.msds(samples_top)
 msds <- label_msds(msds)
@@ -65,6 +69,15 @@ zandp(samples_top, P_shift_B)
 
 grid.arrange(Bs_OT, Bs_PM, layout_matrix=matrix(nrow=1, ncol=3, data=c(1,1,2)))
 
+#reviewer suggestion: word vs non-word thresholds
+
+overall_w_bias <- function(thetas) (thetas[,"B.U.one.N",, drop=F] + thetas[,"B.U.two.N",, drop=F] +
+                                 thetas[,"B.I.one.N",, drop=F] + thetas[,"B.I.two.N",, drop=F])/4 - 
+                              (thetas[,"B.U.one.W",, drop=F] + thetas[,"B.U.two.W",, drop=F] +
+                                 thetas[,"B.I.one.W",, drop=F] + thetas[,"B.I.two.W",, drop=F])/4
+
+zandp(samples_top, overall_w_bias)  
+
 
 
 mvs <- msds[!is.na(msds$S),]
@@ -83,14 +96,16 @@ ggplot(mvs[mvs$R!="PM",], aes(E,M)) +
   geom_line(aes(group=interaction(day, isPM), col=isPM, y=M), linetype=2) +
   facet_grid(ot_match~ot_correct, scales="free")
 
+colnames(mvs)[4] <- "Day"
+
 ggplot(mvs[mvs$R!="PM" &mvs$isPM=="PM",], aes(E,M)) + 
-  geom_point(aes(shape=day), size=3) +
+  geom_point(aes(shape=Day), size=3) +
   geom_errorbar(aes(ymax = M + SD, ymin = M - SD, width = 0.2))+
   ylab("Accumulation Rate") + xlab("Bias Condition") +
-  geom_line(aes(group=interaction(day, isPM), y=M), linetype=2) +
+  geom_line(aes(group=interaction(Day, isPM), y=M), linetype=2) +
   facet_grid(ot_match~ot_correct, scales="free")
 
-colnames(mvs)[4] <- "Day"
+#this one
 ggplot(mvs[mvs$R!="PM" &mvs$isPM=="nonPM",], aes(E,M)) + 
   geom_point(aes(shape=Day), size=3) +
   geom_errorbar(aes(ymax = M + SD, ymin = M - SD, width = 0.2))+

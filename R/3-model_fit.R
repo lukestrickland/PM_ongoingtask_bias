@@ -40,14 +40,14 @@ OT_acc <- fit_summaries$pps[(fit_summaries$pps$S == "ww" &
                           (fit_summaries$pps$S == "nn" &
                              fit_summaries$pps$R == "N"),]
 
-OT_plot<-ggplot.RP.dmc(df_relabel(OT_acc), xaxis="E") +ylab ("Response Proportion") +xlab("")
+OT_plot<-ggplot.RP.dmc(df_relabel(OT_acc), xaxis="E") +ylab ("Response Proportion") +xlab("") +ylim(0.84,0.98)
 OT_plot
 
 OT_RTs <- fit_summaries$RTs[(fit_summaries$RTs$S == "ww"|
                            fit_summaries$RTs$S == "nn") &
                              fit_summaries$RTs$R != "P",]
 
-OT_RTs_plot<-ggplot.RT.dmc(df_relabel(OT_RTs), xaxis="E") +xlab("Bias Condition")
+OT_RTs_plot<-ggplot.RT.dmc(df_relabel(OT_RTs), xaxis="E") +xlab("Bias Condition") +ylim(0.3,2.4)
 OT_RTs_plot
 
 grid.arrange(OT_plot, OT_RTs_plot, layout_matrix = cbind(c(1,2,2), c(1,2,2))) 
@@ -72,7 +72,7 @@ PM_err_ldC <-
                          
 
 
-PMerrC_plot <-ggplot.RP.dmc(df_relabel(PM_err_ldC), xaxis="E") +xlab("")
+PMerrC_plot <-ggplot.RP.dmc(df_relabel(PM_err_ldC), xaxis="E") +xlab("") +ylim(0.28,0.44)
 
 #incorrect ldt on PM trials
 PM_err_ldI <-
@@ -92,7 +92,7 @@ PM_RTs <-
                       (fit_summaries$RTs$S == "pw" &
                          fit_summaries$RTs$R == "P"),]
 
-PM_RTs_plot <-ggplot.RT.dmc(df_relabel(PM_RTs),xaxis="E") +xlab("")+ylab("")
+PM_RTs_plot <-ggplot.RT.dmc(df_relabel(PM_RTs),xaxis="E") +xlab("")+ylab("") +ylim(0.3,2.4)
 
 PMerr_RTs_ldC <-
   fit_summaries$RTs[(fit_summaries$RTs$S == "pn" &
@@ -100,7 +100,7 @@ PMerr_RTs_ldC <-
                       (fit_summaries$RTs$S == "pw" &
                          fit_summaries$RTs$R == "W"), ]
 
-PMerrC_RTs_plot <-ggplot.RT.dmc(df_relabel(PMerr_RTs_ldC), xaxis="E") +xlab("")
+PMerrC_RTs_plot <-ggplot.RT.dmc(df_relabel(PMerr_RTs_ldC), xaxis="E") +xlab("")+ylim(0.3,2.4)
 
 PMerr_RTs_ldI <-
   fit_summaries$RTs[(fit_summaries$RTs$S == "pn" &
@@ -109,6 +109,6 @@ PMerr_RTs_ldI <-
                          fit_summaries$RTs$R == "N"), ]
 
 
-PMerrI_RTs_plot <-ggplot.RT.dmc(df_relabel(PMerr_RTs_ldI), xaxis="E")+xlab("Bias Condition")+ylab("")
+PMerrI_RTs_plot <-ggplot.RT.dmc(df_relabel(PMerr_RTs_ldI), xaxis="E")+xlab("Bias Condition")+ylab("")+ylim(0.3,2.4)
 
 grid.arrange(PM_RTs_plot, PMerrC_RTs_plot,PMerrI_RTs_plot)
