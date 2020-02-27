@@ -6,7 +6,7 @@ load_model ("LBA","lbaN_B.R")
 load("samples/samples_top.RData")
 #Reviewer suggestion: try vary t0 by day.
 # load("samples/samples_top_t0.RData")
-samples_top <- samples_top_t0
+#samples_top <- samples_top_t0
 
 msds <- get.msds(samples_top)
 msds <- label_msds(msds)
@@ -35,7 +35,7 @@ Bs_PM <- ggplot(Bs[Bs$R=="PM",], aes(factor(E),M)) +
   geom_line(aes(group=day, y=M), linetype=2) +
   facet_grid(. ~ R)+ scale_shape_discrete(name="Day")
 
-#these 2 are equivalent
+#these 2 are equivalent because averages with same number of observations (posterior samples)
 
 N_shift_B <- function(thetas) (thetas[,"B.I.one.N",, drop=F] + thetas[,"B.I.two.N",, drop=F])/2 - 
                               (thetas[,"B.U.one.N",, drop=F] + thetas[,"B.U.two.N",, drop=F])/2
@@ -65,6 +65,16 @@ P_shift_B <- function(thetas) ((thetas[,"B.I.one.P",, drop=F] - thetas[,"B.U.one
                               (thetas[,"B.I.two.P",, drop=F] - thetas[,"B.U.two.P",, drop=F]) )/2
   
 zandp(samples_top, P_shift_B)  
+
+
+P_shift_B_d1 <- function(thetas) thetas[,"B.I.one.P",, drop=F] - thetas[,"B.U.one.P",, drop=F] 
+  
+zandp(samples_top, P_shift_B_d1)  
+
+P_shift_B_d2 <- function(thetas) thetas[,"B.I.two.P",, drop=F] - thetas[,"B.U.two.P",, drop=F] 
+  
+zandp(samples_top, P_shift_B_d2)  
+                              
                               
 
 grid.arrange(Bs_OT, Bs_PM, layout_matrix=matrix(nrow=1, ncol=3, data=c(1,1,2)))
@@ -78,8 +88,7 @@ overall_w_bias <- function(thetas) (thetas[,"B.U.one.N",, drop=F] + thetas[,"B.U
 
 zandp(samples_top, overall_w_bias)  
 
-
-
+                       
 mvs <- msds[!is.na(msds$S),]
 
 ggplot(mvs, aes(factor(S),M)) + 
